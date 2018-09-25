@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from mall_web.utils.common_data import GENDER_CHOICES
-from mall_web.utils.base_model import BaseModel
+from comic_web.utils.common_data import GENDER_CHOICES
+from comic_web.utils.base_model import BaseModel
 import django.utils.timezone as timezone
 import datetime
 

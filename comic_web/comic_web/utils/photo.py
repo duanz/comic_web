@@ -1,7 +1,7 @@
 import os
 import uuid
 from PIL import Image
-from mall_web import settings
+from comic_web import settings
 
 photo_specs = [
     {'type': 'thumb', 'width': 180, 'height': 180, 'quality': 86},

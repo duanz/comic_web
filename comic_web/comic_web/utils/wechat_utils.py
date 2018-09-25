@@ -12,7 +12,7 @@ import base64
 from Crypto.Cipher import AES
 import xml.etree.ElementTree as ETree
 
-from mall_web.utils import time_lib
+from comic_web.utils import time_lib
 from django.conf import settings
 
 from member.models import WeixinAuth

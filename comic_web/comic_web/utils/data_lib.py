@@ -1,4 +1,4 @@
-from mall_web.utils import time_lib
+from comic_web.utils import time_lib
 from mall_admin import models
 from django.conf import settings
 import time

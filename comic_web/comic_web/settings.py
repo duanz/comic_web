@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/2.0/ref/settings/
 """
 
 import os
+from mongoengine import connect as MongoConnect
 import comic_web.settings_local
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -76,21 +77,39 @@ WSGI_APPLICATION = 'comic_web.wsgi.application'
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
 
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'comic_web',
+#         'USER': os.getenv('MYSQL_USER', 'root'),
+#         'PASSWORD': os.getenv('MYSQL_PASSWORD', 'root'),
+#         'HOST': os.getenv('MYSQL_HOST', 'localhost'),
+#         'PORT': '3306',
+#         'TEST': {
+#             'CHARSET': 'utf8',
+#             'COLLATION': 'utf8_general_ci',
+#         }
+#     },
+# }
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'comic_web',
-        'USER': os.getenv('MYSQL_USER', 'root'),
-        'PASSWORD': os.getenv('MYSQL_PASSWORD', 'root'),
-        'HOST': os.getenv('MYSQL_HOST', 'localhost'),
-        'PORT': '3306',
-        'TEST': {
-            'CHARSET': 'utf8',
-            'COLLATION': 'utf8_general_ci',
-        }
-    },
+        'ENGINE': None, # 把默认的数据库连接至为None
+    }
 }
+MongoConnect(
+    db="comic_web",
+    host=os.getenv('MYSQL_HOST', 'localhost'),
+    port=os.getenv("MYSQL_PORT", 27017),
+    username=os.getenv('MYSQL_USER', 'root'),
+    password=os.getenv('MYSQL_PASSWORD', 'root')
+)
+# add session
+SESSION_ENGINE = 'mongoengine.django.sessions'
 
+# add authentication
+AUTHENTICATION_BACKENDS = (
+    'mongoengine.django.auth.MongoEngineBackend',
+)
 # Password validation
 # https://docs.djangoproject.com/en/2.0/ref/settings/#auth-password-validators
 
