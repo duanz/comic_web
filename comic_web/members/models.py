@@ -1,4 +1,4 @@
-from django.db import models
+from djongo import models
 from django.contrib.auth.models import AbstractUser
 from comic_web.utils.common_data import GENDER_CHOICES
 from comic_web.utils.base_model import BaseModel

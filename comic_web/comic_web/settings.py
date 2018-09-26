@@ -55,9 +55,21 @@ ROOT_URLCONF = 'comic_web.urls'
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.jinja2.Jinja2',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],
-        'APP_DIRS': False,
+        'BACKEND': 'django.template.backends.jinja2.Jinja2',#jinja2模版
+        'DIRS': [
+            os.path.join(BASE_DIR, 'templates'),#模版文件位置
+        ],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'environment': 'comic_web.jinja2_env.environment',#XXX为你的app名称,
+        },
+    },
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [
+            os.path.join(BASE_DIR, 'templates'),
+        ],
+        'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
@@ -65,7 +77,6 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
-            'environment': 'comic_web.jinja2_env.environment',
         },
     },
 ]
@@ -77,39 +88,23 @@ WSGI_APPLICATION = 'comic_web.wsgi.application'
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
 
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'comic_web',
-#         'USER': os.getenv('MYSQL_USER', 'root'),
-#         'PASSWORD': os.getenv('MYSQL_PASSWORD', 'root'),
-#         'HOST': os.getenv('MYSQL_HOST', 'localhost'),
-#         'PORT': '3306',
-#         'TEST': {
-#             'CHARSET': 'utf8',
-#             'COLLATION': 'utf8_general_ci',
-#         }
-#     },
-# }
 DATABASES = {
     'default': {
-        'ENGINE': None, # 把默认的数据库连接至为None
-    }
+        'ENGINE': 'djongo',
+        'NAME': 'comic_web',
+        'USER': os.getenv('MYSQL_USER', 'root'),
+        'PASSWORD': os.getenv('MYSQL_PASSWORD', 'root'),
+        'HOST': os.getenv('MYSQL_HOST', 'localhost'),
+        'PORT': 27017,
+        'TEST': {
+            'CHARSET': 'utf8',
+            'COLLATION': 'utf8_general_ci',
+        }
+    },
 }
-MongoConnect(
-    db="comic_web",
-    host=os.getenv('MYSQL_HOST', 'localhost'),
-    port=os.getenv("MYSQL_PORT", 27017),
-    username=os.getenv('MYSQL_USER', 'root'),
-    password=os.getenv('MYSQL_PASSWORD', 'root')
-)
-# add session
-SESSION_ENGINE = 'mongoengine.django.sessions'
 
-# add authentication
-AUTHENTICATION_BACKENDS = (
-    'mongoengine.django.auth.MongoEngineBackend',
-)
+
+
 # Password validation
 # https://docs.djangoproject.com/en/2.0/ref/settings/#auth-password-validators
 
@@ -132,9 +127,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/2.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'zh-hans'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Shanghai'
 
 USE_I18N = True
 

@@ -8,9 +8,9 @@
 import os
 
 os.environ["MYSQL_HOST"] = "127.0.0.1"
-os.environ["MYSQL_USER"] = "root"
-os.environ["MYSQL_PORT"] = "3306"
-os.environ["MYSQL_PASSWORD"] = "root"
+os.environ["MYSQL_USER"] = ""
+os.environ["MYSQL_PORT"] = "27017"
+os.environ["MYSQL_PASSWORD"] = ""
 os.environ["APP_HOST"] = "http://localhost"
 os.environ['WX_APP_ID'] = "wx623b328b9b81cc0a"
 os.environ['WX_APP_SECRET'] = "2ae16bac72a901a1bb3c58352895fe8d"
