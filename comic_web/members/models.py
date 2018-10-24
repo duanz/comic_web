@@ -10,11 +10,11 @@ class Member(AbstractUser, BaseModel):
     open_id = models.CharField(null=True, max_length=30)
     gender = models.CharField(max_length=2, choices=GENDER_CHOICES)
     group_id = models.IntegerField(null=False, default=-1)
-    inviter_id = models.IntegerField(null=True, default=-1)
+    inviter_id = models.IntegerField(null=True, default=0)
     markup = models.CharField(null=True, max_length=30, default='')
     phone = models.CharField(null=True, max_length=30, default='')
     avatar_url = models.CharField(null=True, max_length=250, default='')
-    share_qrcode_key = models.CharField(null=True, max_length=100, default='')
+
 
     class Meta:
         permissions = (
