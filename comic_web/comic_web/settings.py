@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'members',
+    'test_djongo',
+    'comic_admin',
 ]
 
 MIDDLEWARE = [
@@ -124,7 +125,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-AUTH_USER_MODEL = 'members.Member'
+AUTH_USER_MODEL = 'auth.User'
 
 # 默认分页数量
 PAGINATE_BY = 30
