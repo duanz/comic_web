@@ -1,8 +1,9 @@
+import datetime
 from djongo import models
 from comic_web.utils.common_data import GENDER_CHOICES
 from comic_web.utils.base_model import BaseModel
+from comic_web.utils import photo as photo_lib
 import django.utils.timezone as timezone
-import datetime
 
 
 class IMAGE_TYPE_DESC:
@@ -20,7 +21,23 @@ IMAGE_TYPE = (
 
 class Author(BaseModel):
     name = models.CharField('作者名', max_length=60, default="anonymous")
-    mobile_phone = models.IntegerField("手机号", default=0)
+    mobile_phone = models.CharField("手机号", default="", max_length=20)
+
+    def __str__(self):
+        return self.name
+
+
+class Image(BaseModel):
+    """图片"""
+    img_type = models.CharField('图片类型', null=True, max_length=2, default='', choices=IMAGE_TYPE)
+    order = models.IntegerField('排序位置', default=0)
+    active = models.BooleanField('生效', default=True)
+    name = models.CharField('名称', max_length=255, default='')
+    key = models.ImageField('图片', upload_to=photo_lib.django_image_upload_handler, blank=True)
+
+    class Meta:
+        db_table = 'comic_image'
+        ordering = ['order']
 
 
 # 漫画表
@@ -33,7 +50,9 @@ class Comic(BaseModel):
     markup = models.CharField('标签', null=True, max_length=100, default='')
     on_shelf = models.BooleanField('是否上架', default=True)
     is_finished = models.BooleanField('是否能已完结', default=False)
-    cover_img_list = models.ManyToManyField(Image, default=0)
+
+    def __str__(self):
+        return self.title
 
     class Meta:
         db_table = 'comic'
@@ -49,28 +68,22 @@ class Comic(BaseModel):
 class Chapter(BaseModel):
     comic_id = models.ForeignKey(Comic, on_delete=models.DO_NOTHING)
     title = models.CharField('章节标题', null=False, max_length=60, default="")
-    cover_img_id = models.ForeignKey(Image, default=0, null=True, on_delete=models.DO_NOTHING)
     order = models.IntegerField('排序位置', default=0)
     active = models.BooleanField('生效', default=True)
 
-
-class Image(BaseModel):
-    """图片"""
-    key = models.CharField('图片文件名', null=True, max_length=100, default='')
-    img_type = models.CharField('图片类型', null=True, max_length=2, default='', choices=IMAGE_TYPE)
-    order = models.IntegerField('排序位置', default=0)
-    active = models.BooleanField('生效', default=True)
-    name = models.CharField('名称', max_length=255, default='')
-    chapter_id = models.ForeignKey(Chapter, on_delete=models.DO_NOTHING, null=True)
-
-    class Meta:
-        db_table = 'comic_image'
-        ordering = ['order']
+    def __str__(self):
+        return self.title
 
 
+class ChapterImage(BaseModel):
+    '''章节图片中间表'''
+    comic_id = models.ForeignKey(Comic, default=0, on_delete=models.DO_NOTHING)
+    chapter_id = models.ForeignKey(Chapter, default=0, on_delete=models.DO_NOTHING)
+    img_id = models.ForeignKey(Image, default=0, on_delete=models.DO_NOTHING)
 
 
-
-
-
-
+class CoverImage(BaseModel):
+    '''封面图片中间表'''
+    comic_id = models.ForeignKey(Comic, default=0, on_delete=models.DO_NOTHING, null=True)
+    chapter_id = models.ForeignKey(Chapter, default=0, null=True, on_delete=models.DO_NOTHING)
+    img_id = models.ForeignKey(Image, default=0, on_delete=models.DO_NOTHING)
