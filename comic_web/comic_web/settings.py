@@ -29,6 +29,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+APP_HOST = "http://127.0.0.1:8001"
+
 # 上传文件保存目录
 UPLOAD_SAVE_PATH = os.getenv('UPLOAD_SAVE_PATH', os.path.join(BASE_DIR, 'static', 'mall_web_upload'))
 # 上传文件访问目录

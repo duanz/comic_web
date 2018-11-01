@@ -4,6 +4,7 @@ from comic_web.utils.common_data import GENDER_CHOICES
 from comic_web.utils.base_model import BaseModel
 from comic_web.utils import photo as photo_lib
 import django.utils.timezone as timezone
+from django.utils.safestring import mark_safe
 
 
 class IMAGE_TYPE_DESC:
@@ -23,6 +24,9 @@ class Author(BaseModel):
     name = models.CharField('作者名', max_length=60, default="anonymous")
     mobile_phone = models.CharField("手机号", default="", max_length=20)
 
+    class Meta:
+        verbose_name_plural = '作者'
+
     def __str__(self):
         return self.name
 
@@ -33,10 +37,14 @@ class Image(BaseModel):
     order = models.IntegerField('排序位置', default=0)
     active = models.BooleanField('生效', default=True)
     name = models.CharField('名称', max_length=255, default='')
-    key = models.ImageField('图片', upload_to=photo_lib.django_image_upload_handler, blank=True)
+    key = models.ImageField('图片', upload_to=photo_lib.django_image_upload_handler, blank=True, unique=True)
+
+    def __str__(self):
+        return self.name
 
     class Meta:
         db_table = 'comic_image'
+        verbose_name_plural = '图片'
         ordering = ['order']
 
 
@@ -55,6 +63,7 @@ class Comic(BaseModel):
         return self.title
 
     class Meta:
+        verbose_name_plural = '漫画'
         db_table = 'comic'
         ordering = ['-update_at']
         permissions = (
@@ -71,6 +80,9 @@ class Chapter(BaseModel):
     order = models.IntegerField('排序位置', default=0)
     active = models.BooleanField('生效', default=True)
 
+    class Meta:
+        verbose_name_plural = '章节'
+
     def __str__(self):
         return self.title
 
@@ -79,11 +91,22 @@ class ChapterImage(BaseModel):
     '''章节图片中间表'''
     comic_id = models.ForeignKey(Comic, default=0, on_delete=models.DO_NOTHING)
     chapter_id = models.ForeignKey(Chapter, default=0, on_delete=models.DO_NOTHING)
-    img_id = models.ForeignKey(Image, default=0, on_delete=models.DO_NOTHING)
+    img_key = models.ForeignKey(Image, to_field="key", default=0, on_delete=models.DO_NOTHING)
+    order = models.IntegerField('排序位置', default=0)
+    active = models.BooleanField('生效', default=True)
+
+    class Meta:
+        verbose_name_plural = '章节详情'
 
 
 class CoverImage(BaseModel):
     '''封面图片中间表'''
     comic_id = models.ForeignKey(Comic, default=0, on_delete=models.DO_NOTHING, null=True)
-    chapter_id = models.ForeignKey(Chapter, default=0, null=True, on_delete=models.DO_NOTHING)
-    img_id = models.ForeignKey(Image, default=0, on_delete=models.DO_NOTHING)
+    chapter_id = models.ForeignKey(Chapter, null=True, blank=True, on_delete=models.DO_NOTHING)
+    img_key = models.ForeignKey(Image, to_field="key", default=0, on_delete=models.DO_NOTHING)
+    # img_key = models.ForeignKey(Image, limit_choices_to={'img_type': [IMAGE_TYPE_DESC.CHAPTER_COVER, IMAGE_TYPE_DESC.COMIC_COVER]}, to_field="key", default=0, on_delete=models.DO_NOTHING)
+    order = models.IntegerField('排序位置', default=0)
+    active = models.BooleanField('生效', default=True)
+
+    class Meta:
+        verbose_name_plural = '封面'

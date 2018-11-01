@@ -153,7 +153,7 @@ def save_upload_photo(photo_file, base_static_path=settings.UPLOAD_SAVE_PATH, ph
 
 
 def django_image_upload_handler(instance, filename):
-    image_info = save_upload_photo(instance.image)
+    image_info = save_upload_photo(instance.key)
     return image_info['name']
 
 
