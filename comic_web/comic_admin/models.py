@@ -51,7 +51,7 @@ class Image(BaseModel):
 # 漫画表
 class Comic(BaseModel):
     title = models.CharField('漫画名称', max_length=60, default='', unique=True)
-    author_id = models.ForeignKey(Author, on_delete=models.DO_NOTHING)
+    author = models.ForeignKey(Author, on_delete=models.DO_NOTHING)
     collection_num = models.IntegerField('收藏数量', null=True, default=0)
     click_num = models.IntegerField('点击数量', null=True, default=0)
     desc = models.CharField('描述', max_length=500, default="")
@@ -75,7 +75,7 @@ class Comic(BaseModel):
 
 # 漫画章节表
 class Chapter(BaseModel):
-    comic_id = models.ForeignKey(Comic, on_delete=models.DO_NOTHING)
+    comic = models.ForeignKey(Comic, on_delete=models.DO_NOTHING)
     title = models.CharField('章节标题', null=False, max_length=60, default="")
     order = models.IntegerField('排序位置', default=0)
     active = models.BooleanField('生效', default=True)
@@ -89,9 +89,9 @@ class Chapter(BaseModel):
 
 class ChapterImage(BaseModel):
     '''章节图片中间表'''
-    comic_id = models.ForeignKey(Comic, default=0, on_delete=models.DO_NOTHING)
-    chapter_id = models.ForeignKey(Chapter, default=0, on_delete=models.DO_NOTHING)
-    img_key = models.ForeignKey(Image, to_field="key", default=0, on_delete=models.DO_NOTHING)
+    comic = models.ForeignKey(Comic, default=0, on_delete=models.DO_NOTHING, null=True)
+    chapter = models.ForeignKey(Chapter, on_delete=models.DO_NOTHING)
+    image = models.ForeignKey(Image, limit_choices_to={"img_type__in": [IMAGE_TYPE_DESC.CHAPER_CONTENT]}, default=0, on_delete=models.DO_NOTHING)
     order = models.IntegerField('排序位置', default=0)
     active = models.BooleanField('生效', default=True)
 
@@ -101,10 +101,9 @@ class ChapterImage(BaseModel):
 
 class CoverImage(BaseModel):
     '''封面图片中间表'''
-    comic_id = models.ForeignKey(Comic, default=0, on_delete=models.DO_NOTHING, null=True)
-    chapter_id = models.ForeignKey(Chapter, null=True, blank=True, on_delete=models.DO_NOTHING)
-    img_key = models.ForeignKey(Image, to_field="key", default=0, on_delete=models.DO_NOTHING)
-    # img_key = models.ForeignKey(Image, limit_choices_to={'img_type': [IMAGE_TYPE_DESC.CHAPTER_COVER, IMAGE_TYPE_DESC.COMIC_COVER]}, to_field="key", default=0, on_delete=models.DO_NOTHING)
+    comic = models.ForeignKey(Comic, default=0, on_delete=models.DO_NOTHING, null=True)
+    chapter = models.ForeignKey(Chapter, null=True, blank=True, on_delete=models.DO_NOTHING)
+    image = models.ForeignKey(Image, limit_choices_to={"img_type__in": [IMAGE_TYPE_DESC.COMIC_COVER, IMAGE_TYPE_DESC.CHAPTER_COVER]}, default=0, on_delete=models.DO_NOTHING)
     order = models.IntegerField('排序位置', default=0)
     active = models.BooleanField('生效', default=True)
 

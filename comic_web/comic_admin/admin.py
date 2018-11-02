@@ -28,7 +28,7 @@ class ImageAdmin(admin.ModelAdmin):
 
 @admin.register(Comic)
 class ComicAdmin(admin.ModelAdmin):
-    list_display = ('id', 'title', 'author_id', 'collection_num', 'click_num', 'desc', 'markup', 'on_shelf', 'is_finished', 'cover_image_read')
+    list_display = ('id', 'title', 'author', 'collection_num', 'click_num', 'desc', 'markup', 'on_shelf', 'is_finished', 'cover_image_read')
     readonly_fields = ('cover_image_read', )
 
     def cover_image_read(self, obj):
@@ -51,7 +51,7 @@ class ComicAdmin(admin.ModelAdmin):
 
 @admin.register(Chapter)
 class ChapterAdmin(admin.ModelAdmin):
-    list_display = ('id', 'comic_id', 'title', 'order','active', 'cover_image_read', 'detail_image_read')
+    list_display = ('id', 'comic', 'title', 'order','active', 'cover_image_read', 'detail_image_read')
 
     readonly_fields = ('cover_image_read', 'detail_image_read',)
 
@@ -92,9 +92,11 @@ class ChapterAdmin(admin.ModelAdmin):
 
 @admin.register(ChapterImage)
 class ChapterImageAdmin(admin.ModelAdmin):
-    list_display = ('id', 'comic_id', 'chapter_id', 'order','active')
+    list_display = ('id', 'comic', 'chapter', 'order','active')
 
 
 @admin.register(CoverImage)
 class CoverImageAdmin(admin.ModelAdmin):
-    list_display = ('id', 'comic_id', 'chapter_id', 'order', 'active')
+    list_display = ('id', 'comic', 'chapter', 'order', 'active')
+    list_filter = ("active", )
+    search_fields = ("comic_title", "chapter_title", )
