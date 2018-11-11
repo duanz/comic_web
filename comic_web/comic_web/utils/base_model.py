@@ -20,7 +20,8 @@ class NormalObjectsManager(models.Manager):
 
 class BaseModel(models.Model):
     normal = NormalObjectsManager()
-    objects = models.Manager()
+    # objects = models.Manager()
+    objects = models.DjongoManager()
     status = models.CharField(max_length=10, default='normal')
     create_at = models.DateTimeField(default=timezone.now)
     update_at = models.DateTimeField(default=timezone.now)

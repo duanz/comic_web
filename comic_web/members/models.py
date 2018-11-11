@@ -1,12 +1,12 @@
 from djongo import models
-from django.contrib.auth.models import AbstractUser
+# from django.contrib.auth.models import AbstractUser
 from comic_web.utils.common_data import GENDER_CHOICES
 from comic_web.utils.base_model import BaseModel
 import django.utils.timezone as timezone
 import datetime
 
 
-class Member(AbstractUser, BaseModel):
+class Member(BaseModel):
     open_id = models.CharField(null=True, max_length=30)
     gender = models.CharField(max_length=2, choices=GENDER_CHOICES)
     group_id = models.IntegerField(null=False, default=-1)

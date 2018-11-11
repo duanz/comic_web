@@ -29,6 +29,12 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+APP_HOST = "http://127.0.0.1:8001"
+
+# 上传文件保存目录
+UPLOAD_SAVE_PATH = os.getenv('UPLOAD_SAVE_PATH', os.path.join(BASE_DIR, 'static', 'mall_web_upload'))
+# 上传文件访问目录
+UPLOAD_STATIC_URL = os.getenv('UPLOAD_STATIC_URL', '/static/mall_web_upload/')
 
 # Application definition
 
@@ -39,7 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'members',
+    'comic_admin',
 ]
 
 MIDDLEWARE = [
@@ -124,7 +130,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-AUTH_USER_MODEL = 'members.Member'
+AUTH_USER_MODEL = 'auth.User'
 
 # 默认分页数量
 PAGINATE_BY = 30

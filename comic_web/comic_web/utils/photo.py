@@ -152,6 +152,11 @@ def save_upload_photo(photo_file, base_static_path=settings.UPLOAD_SAVE_PATH, ph
     return photo_info_dict
 
 
+def django_image_upload_handler(instance, filename):
+    image_info = save_upload_photo(instance.key)
+    return image_info['name']
+
+
 def save_qrcode_photo(photo_file, base_static_path=settings.UPLOAD_SAVE_PATH, photo_type='photo', extension='.jpg'):
 
     photo_id = uuid.uuid4().hex
