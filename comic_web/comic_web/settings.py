@@ -27,7 +27,7 @@ SECRET_KEY = 'k11&%-cuo^ovxx*8_0hsr0r9b17r&&)_be!0pmz+_4v7v(-bj5'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["47.105.183.104", "http://47.105.183.104"]
 
 APP_HOST = "http://127.0.0.1:8001"
 
@@ -99,8 +99,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'djongo',
         'NAME': 'comic_web',
-        'USER': os.getenv('MYSQL_USER', 'root'),
-        'PASSWORD': os.getenv('MYSQL_PASSWORD', 'root'),
+        'USER': os.getenv('MYSQL_USER', 'duan'),
+        'PASSWORD': os.getenv('MYSQL_PASSWORD', '123456'),
         'HOST': os.getenv('MYSQL_HOST', 'localhost'),
         'PORT': 27017,
         'TEST': {
