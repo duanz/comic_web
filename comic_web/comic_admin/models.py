@@ -1,10 +1,15 @@
-import datetime
+# import datetime
 from djongo import models
-from comic_web.utils.common_data import GENDER_CHOICES
 from comic_web.utils.base_model import BaseModel
 from comic_web.utils import photo as photo_lib
 import django.utils.timezone as timezone
 from django.utils.safestring import mark_safe
+
+
+class GENDER_TYPE_DESC:
+    Male = "M"
+    Female = "F"
+    Anonymous = "A"
 
 
 class IMAGE_TYPE_DESC:
@@ -12,6 +17,12 @@ class IMAGE_TYPE_DESC:
     CHAPTER_COVER = '1'
     CHAPER_CONTENT = '2'
 
+
+GENDER_CHOICES = (
+    (GENDER_TYPE_DESC.Male, '男'),
+    (GENDER_TYPE_DESC.Female, '女'),
+    (GENDER_TYPE_DESC.Anonymous, '未知')
+)
 
 IMAGE_TYPE = (
     (IMAGE_TYPE_DESC.COMIC_COVER, '漫画封面'),
@@ -22,6 +33,8 @@ IMAGE_TYPE = (
 
 class Author(BaseModel):
     name = models.CharField('作者名', max_length=60, default="anonymous")
+    gender = models.CharField(
+        '性别', max_length=2, default="A", choices=GENDER_CHOICES)
     mobile_phone = models.CharField("手机号", default="", max_length=20)
 
     class Meta:
@@ -33,11 +46,13 @@ class Author(BaseModel):
 
 class Image(BaseModel):
     """图片"""
-    img_type = models.CharField('图片类型', null=True, max_length=2, default='', choices=IMAGE_TYPE)
+    img_type = models.CharField(
+        '图片类型', null=True, max_length=2, default='', choices=IMAGE_TYPE)
     order = models.IntegerField('排序位置', default=0)
     active = models.BooleanField('生效', default=True)
     name = models.CharField('名称', max_length=255, default='')
-    key = models.ImageField('图片', upload_to=photo_lib.django_image_upload_handler, blank=True, unique=True)
+    key = models.ImageField(
+        '图片', upload_to=photo_lib.django_image_upload_handler, blank=True, unique=True)
 
     def __str__(self):
         return self.name
@@ -73,8 +88,9 @@ class Comic(BaseModel):
             ('comic_delete', '删除漫画'),
         )
 
-# 漫画章节表
+
 class Chapter(BaseModel):
+    '''漫画章节表'''
     comic = models.ForeignKey(Comic, on_delete=models.DO_NOTHING)
     title = models.CharField('章节标题', null=False, max_length=60, default="")
     order = models.IntegerField('排序位置', default=0)
@@ -89,9 +105,11 @@ class Chapter(BaseModel):
 
 class ChapterImage(BaseModel):
     '''章节图片中间表'''
-    comic = models.ForeignKey(Comic, default=0, on_delete=models.DO_NOTHING, null=True)
+    comic = models.ForeignKey(
+        Comic, default=0, on_delete=models.DO_NOTHING, null=True)
     chapter = models.ForeignKey(Chapter, on_delete=models.DO_NOTHING)
-    image = models.ForeignKey(Image, limit_choices_to={"img_type__in": [IMAGE_TYPE_DESC.CHAPER_CONTENT]}, default=0, on_delete=models.DO_NOTHING)
+    image = models.ForeignKey(Image, limit_choices_to={"img_type__in": [
+                              IMAGE_TYPE_DESC.CHAPER_CONTENT]}, default=0, on_delete=models.DO_NOTHING)
     order = models.IntegerField('排序位置', default=0)
     active = models.BooleanField('生效', default=True)
 
@@ -101,9 +119,12 @@ class ChapterImage(BaseModel):
 
 class CoverImage(BaseModel):
     '''封面图片中间表'''
-    comic = models.ForeignKey(Comic, default=0, on_delete=models.DO_NOTHING, null=True)
-    chapter = models.ForeignKey(Chapter, null=True, blank=True, on_delete=models.DO_NOTHING)
-    image = models.ForeignKey(Image, limit_choices_to={"img_type__in": [IMAGE_TYPE_DESC.COMIC_COVER, IMAGE_TYPE_DESC.CHAPTER_COVER]}, default=0, on_delete=models.DO_NOTHING)
+    comic = models.ForeignKey(
+        Comic, default=0, on_delete=models.DO_NOTHING, null=True)
+    chapter = models.ForeignKey(
+        Chapter, null=True, blank=True, on_delete=models.DO_NOTHING)
+    image = models.ForeignKey(Image, limit_choices_to={"img_type__in": [
+                              IMAGE_TYPE_DESC.COMIC_COVER, IMAGE_TYPE_DESC.CHAPTER_COVER]}, default=0, on_delete=models.DO_NOTHING)
     order = models.IntegerField('排序位置', default=0)
     active = models.BooleanField('生效', default=True)
 

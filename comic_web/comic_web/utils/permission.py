@@ -63,12 +63,7 @@ class BaseApiView(views.APIView):
             self.raise_uncaught_exception(exc)
 
         response.exception = True
-        response.data = {
-            'code': response.status_code,
-            'msg': response.data.get('detail'),
-            'result': 'FAIL',
-            'data': {}
-        }
+        response.data = handle_response_exception(response)
         response.status_code = status.HTTP_200_OK
         return response
 
@@ -99,12 +94,14 @@ class BaseGenericAPIView(generics.GenericAPIView):
             self.raise_uncaught_exception(exc)
 
         response.exception = True
-        response.data = {
-            'code': response.status_code,
-            'msg': response.data.get('detail'),
-            'result': 'FAIL',
-            'data': {}
-        }
+        response.data = handle_response_exception(response)
         response.status_code = status.HTTP_200_OK
         return response
 
+
+def handle_response_exception(response):
+    code = response.status_code
+    data = response.data
+    first_msg = list(data.keys())[0]
+    msg = data.get(first_msg) if first_msg else '信息错误'
+    return {'code': code, 'data': data, 'msg': msg, 'result': 'FAIL'}

@@ -27,9 +27,9 @@ SECRET_KEY = 'k11&%-cuo^ovxx*8_0hsr0r9b17r&&)_be!0pmz+_4v7v(-bj5'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["47.105.183.104", "http://47.105.183.104"]
+ALLOWED_HOSTS = ['*']
 
-APP_HOST = "http://127.0.0.1:8001"
+APP_HOST = "http://127.0.0.1:8002"
 
 # 上传文件保存目录
 UPLOAD_SAVE_PATH = os.getenv('UPLOAD_SAVE_PATH', os.path.join(BASE_DIR, 'static', 'mall_web_upload'))
@@ -46,6 +46,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'comic_admin',
+    'rest_framework',
+    'django_filters',
+    'rest_framework_swagger',
+    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [
@@ -62,13 +66,13 @@ ROOT_URLCONF = 'comic_web.urls'
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.jinja2.Jinja2',#jinja2模版
+        'BACKEND': 'django.template.backends.jinja2.Jinja2',  # jinja2模版
         'DIRS': [
-            os.path.join(BASE_DIR, 'templates'),#模版文件位置
+            os.path.join(BASE_DIR, 'templates'),  # 模版文件位置
         ],
         'APP_DIRS': True,
         'OPTIONS': {
-            'environment': 'comic_web.jinja2_env.environment',#XXX为你的app名称,
+            'environment': 'comic_web.jinja2_env.environment',  # XXX为你的app名称,
         },
     },
     {
@@ -110,7 +114,21 @@ DATABASES = {
     },
 }
 
-
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAdminUser',
+        'rest_framework.permissions.AllowAny',
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 30,
+    'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',),
+    'NON_FIELD_ERRORS_KEY': 'details'
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/2.0/ref/settings/#auth-password-validators
