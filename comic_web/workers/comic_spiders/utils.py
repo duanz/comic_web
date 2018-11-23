@@ -1,5 +1,5 @@
 import re, os, traceback
-from dcdownloader import config, title
+from workers.comic_spiders import config, title
 
 def decode_packed_codes(code):
     def encode_base_n(num, n, table=None):
@@ -47,7 +47,7 @@ def generate_aiohttp_session_config(**kwargs):
     return params
 
 def update_window_title(mode=None, msg=None):
-    app_name = 'DCDownloader'
+    app_name = 'workers.comic_spiders'
 
     window_title = app_name
 
@@ -86,7 +86,7 @@ def retry(max_num=5, on_retry=None, on_fail=None, on_fail_exit=False):
                     if not on_fail == None:
                         on_fail(err=err, args=[args, kwargs], retry_num=max_num - remaining_num)
                         remaining_num = max_num
-                        if on_fail_exit == True:
+                        if on_fail_exit is True:
                             exit()
                 
         

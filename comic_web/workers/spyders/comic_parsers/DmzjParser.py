@@ -15,19 +15,9 @@ class DmzjParser(BaseParser):
     async def parse_info(self, data):
         doc = pq(data)
         comic_name = doc('.anim_title_text h1').text()
-        comic_desc = doc('div.line_height_content').text()
-        latest_chapter_str = doc('#newest_chapter').text()
-        latest_chapter = int(re.search(r"\d+", latest_chapter_str).group() or 0)
-        # 选取<td>里第1个 a 元素中的文本块
-        author_name = doc('.anim-main_list td a').eq(0).text()
-        markeup = doc('.anim-main_list td').eq(6)('a').text()
 
         return {
-            'name': comic_name,
-            'latest_chapter': latest_chapter,
-            'desc': comic_desc,
-            'author_name': author_name,
-            'markeup': markeup
+            'name': comic_name
         }
 
     async def parse_chapter(self, data):

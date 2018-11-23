@@ -4,11 +4,13 @@ import aiofiles
 import aiohttp
 import filetype
 
-from dcdownloader import base_logger, utils
+from comic_admin.models import Comic, Author, Chapter
+
+from workers.comic_spiders import base_logger, utils
 # for test
-from dcdownloader.parser.SimpleParser import SimpleParser
-from dcdownloader.utils import retry
-from .aiohttp_proxy_connector import ProxyConnector
+from workers.comic_spiders.parser.SimpleParser import SimpleParser
+from workers.comic_spiders.utils import retry
+from workers.comic_spiders.aiohttp_proxy_connector import ProxyConnector
 logger = base_logger.getLogger(__name__)
 
 
@@ -53,6 +55,7 @@ class Scheduler(object):
         logger.info('Using parser %s ..', type(self.parser).__name__)
         logger.info('Fetch information')
         info = self._get_info(self.url)
+        # return
 
         if not info:
             logger.error('No comic infomation found.')
@@ -73,7 +76,8 @@ class Scheduler(object):
         img_list = self._get_image_url_list(clist)
         logger.info('Total image number: %s', self.total_image_num)
         logger.info('Start download images')
-        self._start_download(img_list, info['name'])
+        # self._start_download(img_list, info['name'])
+        self._start_save_db(img_list, info)
         logger.info('Download comlpleted')
 
         self._close_request_session()
@@ -280,3 +284,120 @@ class Scheduler(object):
 
     def _call_parser_hook(self, hook_name):
         pass
+
+    def _start_save_db(self, image_url_list, info):
+        # 解藕希望
+
+        # @retry(stop=stop_after_attempt(self.max_retry_num), after=after_log(logger, logging.DEBUG))
+        # @retry(max_num=self.max_retry_num, on_retry=self._downloader_on_retry)
+        @retry(max_num=self.max_retry_num,
+               on_retry=lambda err, args, retry_num: logger.warning(
+                   'Failed to update downloading status (%s), retrying.', str(err)),
+               on_fail=lambda err, args, retry_num: logger.error('Failed to update downloading status (%s)', str(err)))
+        async def update_count(save_path, name):
+            logger.info('Download complete: %s',
+                        self._generate_download_info(name, save_path))
+            self.download_complete_number += 1
+            if '_on_download_complete' in dir(self.parser):
+                getattr(self, '_on_download_complete')()
+
+        # @retry(stop=stop_after_attempt(self.max_retry_num), after=after_log(logger, logging.DEBUG))
+        # @retry(max_num=self.max_retry_num, on_retry=self._downloader_on_retry)
+        @retry(max_num=self.max_retry_num,
+               on_retry=lambda err, args, retry_num: logger.warning(
+                   'Failed to save file "%s" (%s), retrying.', args[1]['save_path'], str(err)),
+               on_fail=lambda err, args, retry_num: logger.error('Failed to save file "%s" (%s)', args[1]['save_path'], str(err)))
+        async def save_file(binary, save_path, name):
+            logger.debug('Saving file %s',
+                         self._generate_download_info(name, save_path))
+            async with aiofiles.open(save_path, 'wb') as f:
+                await f.write(binary)
+                await update_count(save_path=save_path, name=name)
+
+        @retry(max_num=self.max_retry_num,
+               on_retry=lambda err, args, retry_num: logger.warning(
+                   'Failed to request url "%s" (%s), retrying.', args[1]['image_url'], str(err)),
+               on_fail=lambda err, args, retry_num: logger.error('Failed to request target "%s" (%s)', args[1]['image_url'], str(err)))
+        async def download(image_url, save_path, name):
+            with (await self.sema):
+                logger.info('Start download: %s',
+                            self._generate_download_info(name, save_path))
+                utils.mkdir('/'.join(save_path.split('/')[:-1]))
+                # async with aiohttp.ClientSession(headers=self.header) as session:
+
+                if self.fetch_only:
+                    logger.warning(
+                        'Fetch only mode is on, all downloading process will not run')
+                    return
+
+                async with self.aiohttp_session.get(image_url, verify_ssl=self.verify_ssl) as resp:
+                    resp_data = await resp.content.read()
+                    if 'on_download_complete' in dir(self.parser):
+                        resp_data = getattr(
+                            self.parser, 'on_download_complete')(resp_data)
+
+                    if 'filename_extension' in dir(self.parser):
+                        filename_extension = self.parser.filename_extension
+                    else:
+                        filename_extension = filetype.guess(
+                            resp_data).extension
+
+                    if filename_extension:
+                        save_path += '.' + filename_extension
+                    else:
+                        logger.warning('unknown filetype')
+
+                    # return (resp_data, save_file)
+                    await save_file(binary=resp_data, save_path=save_path, name=name)
+
+        loop = asyncio.get_event_loop()
+        future_list = []
+
+        comic_obj = self._save_comic_db(info)
+        print(type(comic_obj))
+        print(comic_obj.title, comic_obj.id)
+
+        for k, v in image_url_list.items():
+            for name, url in v.items():
+                # future_list.append(download(url, path + ))
+                # path = '_temp/' + comic_name +  k + '/'+ name
+                # if 'chapter_mode' in dir(self.parser) and not self.parser.chapter_mode:
+                #     path = '/'.join([self.output_path, comic_name, name])
+                # else:
+                #     path = '/'.join([self.output_path, comic_name, k, name])
+
+                # future_list.append(
+                #     download(image_url=url, save_path=path, name=name))
+                future_list.append(
+                    self._save_chapter_db(comic_obj, name))
+
+        loop.run_until_complete(asyncio.gather(*future_list))
+    
+    def _save_comic_db(self, info):
+        comic = Comic.normal.filter(title=info['name']).first()
+        if not comic:
+            comic = Comic()
+        comic.title = info.get('name')
+        comic.author = self._save_or_get_author_db(info)
+        comic.desc = info.get('desc')
+        comic.markeup = info.get('markeup')
+        comic.title = info.get('name')
+        comic.save()
+        return comic
+    
+    def _save_or_get_author_db(self, info):
+        author = Author.normal.filter(name=info['author_name']).first()
+        if not author:
+            author = Author()
+            author.name = info['author_name']
+            author.save()
+        return author
+
+    def _save_chapter_db(self, comic, title):
+        chapter = Chapter.normal.filter(comic=comic, title=title).first()
+        if not chapter:
+            chapter = Chapter()
+        chapter.comic = comic,
+        chapter.title = title
+        chapter.save()
+        return chapter

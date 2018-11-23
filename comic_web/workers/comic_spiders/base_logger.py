@@ -5,6 +5,7 @@ logging_level = logging.INFO
 
 
 def getLogger(name=__name__):
+    logging.basicConfig(filename="{}.log".format(name), filemode="a")
     logger_base = logging.getLogger(name)
     logger_base.setLevel(logging_level)
     stream_handler = logging.StreamHandler()
@@ -13,6 +14,6 @@ def getLogger(name=__name__):
     
     stream_handler.setFormatter(color_formatter)
 
-    logger_base .addHandler(stream_handler)
+    logger_base.addHandler(stream_handler)
 
     return logger_base

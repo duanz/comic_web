@@ -1,12 +1,12 @@
 import yaml
-from djanog.conf import settings
+# from djanog.conf import settings
 
 # 填充默认设置
 default_config = {
     'debug_mode': False,
     'save_manifest_file': True,
-    # 'output_path': './output',    # by duan 11.22
-    'output_path': settings.UPLOAD_SAVE_PATH,
+    'output_path': './output',    # by duan 11.22
+    # 'output_path': settings.UPLOAD_SAVE_PATH,
     'proxy': None,
     'downloader_max_connection_number': 5,
     'downloader_max_retry_number': 5,

@@ -5,10 +5,10 @@ import aiofiles
 import aiohttp
 import filetype
 
-from dcdownloader import base_logger, utils
+from workers.comic_spiders import base_logger, utils
 # for test
-from dcdownloader.parser.SimpleParser import SimpleParser
-from dcdownloader.utils import retry
+from workers.comic_spiders.parser.SimpleParser import SimpleParser
+from workers.comic_spiders.utils import retry
 from .aiohttp_proxy_connector import ProxyConnector
 logger = base_logger.getLogger(__name__)
                                                                                                    

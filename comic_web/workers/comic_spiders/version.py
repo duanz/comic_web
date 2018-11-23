@@ -13,7 +13,7 @@ ascii_art = r'''
 
 def show_welcome():
     print(ascii_art)
-    print('DCDownloader version {version}'.format(version=version))
-    print('Homepage: https://github.com/dev-techmoe/python-dcdownloader')
+    print('workers.comic_spiders version {version}'.format(version=version))
+    print('Homepage: https://github.com/dev-techmoe/python-workers.comic_spiders')
     print('Author: techmoe https://lolicookie.com')
     print()

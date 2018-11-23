@@ -91,7 +91,7 @@ class Comic(BaseModel):
 
 class Chapter(BaseModel):
     '''漫画章节表'''
-    comic = models.ForeignKey(Comic, on_delete=models.DO_NOTHING)
+    comic_id = models.IntegerField("漫画ID", null=False)
     title = models.CharField('章节标题', null=False, max_length=60, default="")
     order = models.IntegerField('排序位置', default=0)
     active = models.BooleanField('生效', default=True)
@@ -105,11 +105,9 @@ class Chapter(BaseModel):
 
 class ChapterImage(BaseModel):
     '''章节图片中间表'''
-    comic = models.ForeignKey(
-        Comic, default=0, on_delete=models.DO_NOTHING, null=True)
-    chapter = models.ForeignKey(Chapter, on_delete=models.DO_NOTHING)
-    image = models.ForeignKey(Image, limit_choices_to={"img_type__in": [
-                              IMAGE_TYPE_DESC.CHAPER_CONTENT]}, default=0, on_delete=models.DO_NOTHING)
+    comic_id = models.IntegerField("漫画ID", null=False)
+    chapter_id = models.IntegerField("章节ID", null=False)
+    image = models.IntegerField("图片ID", null=True, default=0)
     order = models.IntegerField('排序位置', default=0)
     active = models.BooleanField('生效', default=True)
 
