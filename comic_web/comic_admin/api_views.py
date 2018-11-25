@@ -25,7 +25,10 @@ class ComicListApiView(mixins.ListModelMixin, BaseGenericAPIView):
     filter_backends = (rest_framework.DjangoFilterBackend, )
     filter_class = ComicAdminFilters.ComicListFilter
 
-    ordering_fields = ('title', 'author', )
+    ordering_fields = (
+        'title',
+        'author',
+    )
 
     permission_classes = (AllowAny, )
 
@@ -39,7 +42,28 @@ class ComicDetailApiView(mixins.RetrieveModelMixin, BaseGenericAPIView):
     """
     queryset = ComicAdminModels.Comic.normal.filter(on_shelf=True)
     serializer_class = ComicAdminSerializers.ComicDetailSerializer
-    permission_classes = (AllowAny,)
+    permission_classes = (AllowAny, )
 
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
+
+
+class ComicChapterDetailApiView(mixins.RetrieveModelMixin, BaseGenericAPIView):
+    """
+    get: 反馈信息详情；
+    """
+    queryset = ComicAdminModels.Chapter.normal.filter(active=True)
+    serializer_class = ComicAdminSerializers.ChapterDetailSerializer
+    permission_classes = (AllowAny, )
+
+    def get(self, request, *args, **kwargs):
+        return self.retrieve(request, *args, **kwargs)
+
+
+class SpyderUtilsApiView(BaseApiView):
+    "get: 下发爬虫任务"
+    permission_classes = (AllowAny, )
+
+    def get(self, request, *args, **kwargs):
+        ComicAdminSerializers.SpydersUtilsSerializer().to_representation()
+        return Response("success")

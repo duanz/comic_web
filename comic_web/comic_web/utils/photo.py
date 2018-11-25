@@ -152,6 +152,28 @@ def save_upload_photo(photo_file, base_static_path=settings.UPLOAD_SAVE_PATH, ph
     return photo_info_dict
 
 
+def save_binary_photo(photo_file, base_static_path=settings.UPLOAD_SAVE_PATH, photo_type='photo', extension='.jpg'):
+    # raw_ext = photo_file.name.split('.')[-1]
+    # if raw_ext not in ['jpg', 'jpeg', 'png']:
+    #     return False
+
+    photo_id = uuid.uuid4().hex
+
+    d_path_raw = os.path.join(base_static_path, photo_type_dict[photo_type]['sub_path'],
+                              'raw', photo_id[:2])
+    f_path_raw = os.path.join(d_path_raw, photo_id + extension)
+    if not os.path.exists(d_path_raw):
+        os.makedirs(d_path_raw, 0o0755)
+
+    with open(f_path_raw, 'wb+') as f:
+        f.write(photo_file)
+
+    photo_info_dict = convert_photo(
+        photo_id, base_static_path, photo_type=photo_type, extension=extension)
+    photo_info_dict['name'] = photo_id + extension
+    return photo_info_dict
+
+
 def django_image_upload_handler(instance, filename):
     image_info = save_upload_photo(instance.key)
     return image_info['name']
@@ -191,6 +213,8 @@ def build_photo_url(photo_name, pic_type='photo', ext='jpg'):
 def get_img_url_by_obj(img_obj, pic_type='photo', ext='jpg'):
     if not img_obj:
         return ''
+    if isinstance(img_obj, dict):
+        return build_photo_url(photo_name=img_obj.get("key"), pic_type=pic_type, ext=ext)
     return build_photo_url(photo_name=img_obj.key, pic_type=pic_type, ext=ext)
 
 

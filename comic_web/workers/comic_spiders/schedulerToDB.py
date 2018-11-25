@@ -4,7 +4,8 @@ import aiofiles
 import aiohttp
 import filetype
 
-from comic_admin.models import Comic, Author, Chapter
+from comic_admin.models import Comic, Author, Chapter, Image, IMAGE_TYPE_DESC, ChapterImage
+from comic_web.utils import photo as photo_lib
 
 from workers.comic_spiders import base_logger, utils
 # for test
@@ -40,6 +41,9 @@ class Scheduler(object):
         self.save_manifest_file = False
         self.fetch_only = fetch_only
         self.verify_ssl = verify_ssl
+
+        self.chapter_img_dict = {}
+        self.comic_obj = None
 
         self.sema = asyncio.Semaphore(self.max_connection_num)
 
@@ -78,6 +82,8 @@ class Scheduler(object):
         logger.info('Start download images')
         # self._start_download(img_list, info['name'])
         self._start_save_db(img_list, info)
+        self._save_chapter_img_db(self.comic_obj, self.chapter_img_dict)
+
         logger.info('Download comlpleted')
 
         self._close_request_session()
@@ -350,41 +356,87 @@ class Scheduler(object):
                     # return (resp_data, save_file)
                     await save_file(binary=resp_data, save_path=save_path, name=name)
 
+        # @retry(max_num=self.max_retry_num,
+        #        on_retry=lambda err, args, retry_num: logger.warning(
+        #            'Failed to request url "%s" (%s), retrying.', args[1]['image_url'], str(err)),
+        #        on_fail=lambda err, args, retry_num: logger.error('Failed to request target "%s" (%s)', args[1]['image_url'], str(err)))
+        async def download_with_db(image_url, name, chapter_id, comic_id, count):
+            with (await self.sema):
+                logger.info('Start download: %s',
+                            self._generate_download_info(name, "default save path"))
+                # utils.mkdir('/'.join(save_path.split('/')[:-1]))
+                # async with aiohttp.ClientSession(headers=self.header) as session:
+
+                if self.fetch_only:
+                    logger.warning(
+                        'Fetch only mode is on, all downloading process will not run'
+                    )
+                    return
+
+                async with self.aiohttp_session.get(
+                        image_url, verify_ssl=self.verify_ssl) as resp:
+                    resp_data = await resp.content.read()
+                    if 'on_download_complete' in dir(self.parser):
+                        resp_data = getattr(self.parser,
+                                            'on_download_complete')(resp_data)
+
+                    # if 'filename_extension' in dir(self.parser):
+                    #     filename_extension = self.parser.filename_extension
+                    # else:
+                    #     filename_extension = filetype.guess(
+                    #         resp_data).extension
+
+                    # if filename_extension:
+                    #     save_path += '.' + filename_extension
+                    # else:
+                    #     logger.warning('unknown filetype')
+
+                    # return (resp_data, save_file)
+                    # await photo_lib.save_upload_photo(resp_data)
+                    photo_info = photo_lib.save_binary_photo(resp_data)
+                    print(">>>>>>>>>>>>>>>>>:  ", photo_info)
+                    img = Image()
+                    img.img_type = IMAGE_TYPE_DESC.CHAPER_CONTENT
+                    img.key = photo_info['id']
+                    img.name = photo_info['name']
+                    img.save()
+                    ChapterImage(comic_id=comic_id, chapter_id=chapter_id, image_id=img.id, order=count).save()
+                    return photo_info
+
         loop = asyncio.get_event_loop()
+        # chapter imgs info
         future_list = []
 
-        comic_obj = self._save_comic_db(info)
-        print(type(comic_obj))
-        print(comic_obj.title, comic_obj.id)
+        # save comic
+        self.comic_obj = self._save_comic_db(info)
 
         for k, v in image_url_list.items():
+            # save chapter
+            chapter_obj = self._save_chapter_db(self.comic_obj, k)
+            count = 0
+            # self.chapter_img_dict.update({str(chapter_obj.id): []})
             for name, url in v.items():
-                # future_list.append(download(url, path + ))
-                # path = '_temp/' + comic_name +  k + '/'+ name
-                # if 'chapter_mode' in dir(self.parser) and not self.parser.chapter_mode:
-                #     path = '/'.join([self.output_path, comic_name, name])
-                # else:
-                #     path = '/'.join([self.output_path, comic_name, k, name])
+                future_list.append(download_with_db(image_url=url, name=name, chapter_id=chapter_obj.id, comic_id=self.comic_obj.id, count=count))
+                count += 0
+                # self.chapter_img_dict[str(chapter_obj.id)].append(
+                #     download_with_db(url, name))
 
-                # future_list.append(
-                #     download(image_url=url, save_path=path, name=name))
-                future_list.append(
-                    self._save_chapter_db(comic_obj, name))
 
         loop.run_until_complete(asyncio.gather(*future_list))
-    
+        # return
+
     def _save_comic_db(self, info):
         comic = Comic.normal.filter(title=info['name']).first()
         if not comic:
             comic = Comic()
         comic.title = info.get('name')
-        comic.author = self._save_or_get_author_db(info)
+        comic.author_id = self._save_or_get_author_db(info).id
         comic.desc = info.get('desc')
         comic.markeup = info.get('markeup')
         comic.title = info.get('name')
         comic.save()
         return comic
-    
+
     def _save_or_get_author_db(self, info):
         author = Author.normal.filter(name=info['author_name']).first()
         if not author:
@@ -394,10 +446,19 @@ class Scheduler(object):
         return author
 
     def _save_chapter_db(self, comic, title):
-        chapter = Chapter.normal.filter(comic=comic, title=title).first()
+        print(title, "<<<<<<<<<<<<<", comic.id)
+        chapter = Chapter.normal.filter(comic_id=comic.id, title=title).first()
         if not chapter:
             chapter = Chapter()
-        chapter.comic = comic,
-        chapter.title = title
-        chapter.save()
+            chapter.comic_id = comic.id
+            chapter.title = title
+            chapter.save()
         return chapter
+
+    def _save_chapter_img_db(self, comic_id, chapter_img_list):
+        count = 0
+        for chapter_id, img_list in chapter_img_list.items():
+            for index, info in enumerate(img_list):
+                img = Image(img_type=IMAGE_TYPE_DESC.CHAPER_CONTENT, order=index, key=info['id'], name=info['name']).save()
+                ChapterImage(comic_id=comic_id, chapter_id=chapter_id, image_id=img.id, order=count).save()
+                count += 1

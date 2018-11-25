@@ -5,7 +5,7 @@ import django.utils.timezone as timezone
 class NormalQuerySet(models.QuerySet):
     def delete(self):
         return self.update(status='deleted')
-    
+
     def hard_delete(self):
         return super().delete()
 
