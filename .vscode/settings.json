@@ -1,4 +1,9 @@
 {
-    "python.pythonPath": "E:\\python_envs\\comic_web\\Scripts\\python.exe",
-    "python.linting.pylintEnabled": false
+    "python.pythonPath": "D:\\python_envs\\comic_web\\Scripts\\python.exe",
+    "python.linting.pylintEnabled": false,
+    "python.linting.flake8Enabled": true,
+    "python.linting.flake8Args": [
+        "--max-line-length=256",
+        "--ignore=W293,W292"
+    ]
 }

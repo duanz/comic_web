@@ -16,6 +16,21 @@ class IndexComicApiView(BaseApiView):
         return Response(data={"title": "这是测试"})
 
 
+class ComicCoverImageApiView(mixins.ListModelMixin, mixins.CreateModelMixin, BaseGenericAPIView):
+    """
+    get: 反馈信息详情；
+    """
+    queryset = ComicAdminModels.CoverImage.normal.filter(active=True)
+    serializer_class = ComicAdminSerializers.CoverImageSerializer
+    permission_classes = (AllowAny, )
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+    
+    def post(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
+
+
 class ComicListApiView(mixins.ListModelMixin, BaseGenericAPIView):
     """获取漫画列表"""
 

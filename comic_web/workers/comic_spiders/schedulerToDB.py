@@ -4,7 +4,7 @@ import aiofiles
 import aiohttp
 import filetype
 
-from comic_admin.models import Comic, Author, Chapter, Image, IMAGE_TYPE_DESC, ChapterImage
+from comic_admin.models import Comic, Author, Chapter, Image, IMAGE_TYPE_DESC, ChapterImage, CoverImage
 from comic_web.utils import photo as photo_lib
 
 from workers.comic_spiders import base_logger, utils
@@ -360,7 +360,7 @@ class Scheduler(object):
         #        on_retry=lambda err, args, retry_num: logger.warning(
         #            'Failed to request url "%s" (%s), retrying.', args[1]['image_url'], str(err)),
         #        on_fail=lambda err, args, retry_num: logger.error('Failed to request target "%s" (%s)', args[1]['image_url'], str(err)))
-        async def download_with_db(image_url, name, chapter_id, comic_id, count):
+        async def download_with_db(image_url, name, chapter_id, comic_id, count, type="chapter_img"):
             with (await self.sema):
                 logger.info('Start download: %s',
                             self._generate_download_info(name, "default save path"))
@@ -394,13 +394,15 @@ class Scheduler(object):
                     # return (resp_data, save_file)
                     # await photo_lib.save_upload_photo(resp_data)
                     photo_info = photo_lib.save_binary_photo(resp_data)
-                    print(">>>>>>>>>>>>>>>>>:  ", photo_info)
                     img = Image()
                     img.img_type = IMAGE_TYPE_DESC.CHAPER_CONTENT
                     img.key = photo_info['id']
                     img.name = photo_info['name']
                     img.save()
-                    ChapterImage(comic_id=comic_id, chapter_id=chapter_id, image_id=img.id, order=count).save()
+                    if type == "chapter_img":
+                        ChapterImage(comic_id=comic_id, chapter_id=chapter_id, image_id=img.id, order=count).save()
+                    elif type == "comic_img":
+                        CoverImage(comic_id=comic_id, image_id=img.id).save()
                     return photo_info
 
         loop = asyncio.get_event_loop()
@@ -420,7 +422,6 @@ class Scheduler(object):
                 count += 0
                 # self.chapter_img_dict[str(chapter_obj.id)].append(
                 #     download_with_db(url, name))
-
 
         loop.run_until_complete(asyncio.gather(*future_list))
         # return

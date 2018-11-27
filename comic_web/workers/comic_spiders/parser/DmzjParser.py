@@ -21,6 +21,7 @@ class DmzjParser(BaseParser):
         # 选取<td>里第1个 a 元素中的文本块
         author_name = doc('.anim-main_list td a').eq(0).text()
         markeup = doc('.anim-main_list td').eq(6)('a').text()
+        cover = doc('#Cover img').attr("src")
 
         return {
             'name': comic_name,
