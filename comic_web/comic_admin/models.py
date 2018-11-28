@@ -98,7 +98,7 @@ class Chapter(BaseModel):
     class Meta:
         verbose_name_plural = '章节'
         db_table = 'comic_chapter'
-        ordering = ['-update_at']
+        ordering = ['order', '-update_at']
         permissions = (
             ('comic_chapter_add', '添加漫画章节'),
             ('comic_chapter_edit', '编辑漫画章节'),

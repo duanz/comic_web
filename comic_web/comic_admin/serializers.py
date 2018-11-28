@@ -64,7 +64,7 @@ class ChapterDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ComicAdminModels.Chapter
-        fields = ("comic_id", "title", "number", "order", "active", "create_at", 
+        fields = ("id", "comic_id", "title", "number", "order", "active", "create_at", 
                   "origin_addr", "image_url_list", "relate_chapter_id")
 
     def get_image_url_list(self, obj):
@@ -73,16 +73,14 @@ class ChapterDetailSerializer(serializers.ModelSerializer):
     def get_relate_chapter_id(self, obj):
         query_set = ComicAdminModels.Chapter.normal.filter(comic_id=obj.comic_id).values("id")
         id_list = [item['id'] for item in query_set] if query_set else []
+        print(id_list, obj.id)
         index = id_list.index(obj.id)
         if index == 0:
             return {"pre_id": 0, "next_id": id_list[1]}
         elif index == len(id_list) - 1:
-            return {"pre_id": index - 1, "next_id": 0}
+            return {"pre_id": id_list[index - 1], "next_id": 0}
         else:
-            return {"pre_id": index - 1, "next_id": index + 1}
-
-
-
+            return {"pre_id": id_list[index - 1], "next_id": id_list[index + 1]}
 
 
 class CommonImageSerializer(serializers.ModelSerializer):
@@ -148,7 +146,7 @@ class ComicDetailSerializer(serializers.ModelSerializer):
         return ChapterSerializer(chapters, many=True).data
     
     def get_cover(self, obj):
-        return CommonImageSerializer.to_representation(comic_id=obj.id, img_type="comic_cover", only_url=False)
+        return CommonImageSerializer.to_representation(comic_id=obj.id, img_type="comic_cover", quality="title", only_url=False)
 
 
 import os

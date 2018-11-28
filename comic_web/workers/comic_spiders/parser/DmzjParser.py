@@ -21,15 +21,18 @@ class DmzjParser(BaseParser):
         # 选取<td>里第1个 a 元素中的文本块
         author_name = doc('.anim-main_list td a').eq(0).text()
         markeup = doc('.anim-main_list td').eq(6)('a').text()
-        cover = doc('#Cover img').attr("src")
+        cover = doc("#cover_pic").attr('src')
 
-        return {
+        info = {
             'name': comic_name,
             'latest_chapter': latest_chapter,
             'desc': comic_desc,
             'author_name': author_name,
-            'markeup': markeup
+            'markeup': markeup,
+            'cover': cover
         }
+        print("{} info is >>>: {}".format(comic_name, info))
+        return info
 
     async def parse_chapter(self, data):
         doc = pq(data)
