@@ -1,9 +1,4 @@
-# import sys, os
-# current_directory = os.path.dirname(os.path.abspath(__file__))
-# root_path = os.path.abspath(
-#     os.path.dirname(current_directory) + os.path.sep + ".")
-# sys.path.append(root_path)
-# print(sys.path)
+import os
 from rest_framework import serializers
 from comic_admin import models as ComicAdminModels
 import subprocess
@@ -90,12 +85,18 @@ class CommonImageSerializer(serializers.ModelSerializer):
         fields = ('__all__')
 
     def to_representation(comic_id=None, chapter_id=None, img_type="chapter_content", quality="thumb", only_url=True):
+        if comic_id:
+            comic_id_list = comic_id if isinstance(
+                comic_id, list) else [comic_id]
+        elif chapter_id:
+            chapter_id_list = chapter_id if isinstance(chapter_id, list) else [chapter_id]
+
         if img_type == "chapter_content":
-            queryset = ComicAdminModels.ChapterImage.normal.filter(chapter_id=chapter_id, active=True).values("image_id")
+            queryset = ComicAdminModels.ChapterImage.normal.filter(chapter_id__in=chapter_id_list, active=True).values("image_id")
         elif img_type == "chapter_cover":
-            queryset = ComicAdminModels.CoverImage.normal.filter(chapter_id=chapter_id, active=True).values("image_id")
+            queryset = ComicAdminModels.CoverImage.normal.filter(chapter_id__in=chapter_id_list, active=True).values("image_id")
         elif img_type == "comic_cover":
-            queryset = ComicAdminModels.CoverImage.normal.filter(comic_id=comic_id, active=True).values("image_id")
+            queryset = ComicAdminModels.CoverImage.normal.filter(comic_id__in=comic_id_list, active=True).values("image_id")
         
         if only_url:
             img_set = ComicAdminModels.Image.normal.filter(pk__in=[item.get("image_id") for item in queryset] if queryset else []).values('key')
@@ -119,7 +120,7 @@ class ComicSerializer(serializers.ModelSerializer):
         model = ComicAdminModels.Comic
         fields = ("id", "create_at", "status", "update_at", "title",
                   "collection_num", "click_num", "desc", "markup", "on_shelf",
-                  "is_finished", "author", "latest_chapter", "cover")
+                  "is_finished", "author", "latest_chapter", "cover", )
         read_only_fields = ("cover", )
 
     def get_cover(self, obj):
@@ -149,23 +150,74 @@ class ComicDetailSerializer(serializers.ModelSerializer):
         return CommonImageSerializer.to_representation(comic_id=obj.id, img_type="comic_cover", quality="title", only_url=False)
 
 
-import os
-
-
 class SpydersUtilsSerializer(serializers.Serializer):
     def to_representation(self):
-        # subprocess.Popen([
-        #     "python",
-        #     # "E:\\myProjcet\\com_comic_web\\comic_we\\workers\\comic_spiders\\main.py",
-        #     "E:\\myProjcet\\com_comic_web\\comic_web\\comic_web\\workers\\comic_spiders\\main.py",
-        #     # "python",
-        #     "https://manhua.dmzj.com/yiquanchaoren/"
-        # ])
-
         def run_subprocess(url):
             task_type = "export_invite_stat"
             manage_path = os.path.join(settings.BASE_DIR, 'manage.py')
             subprocess.Popen(['python', manage_path, task_type, "-u", url])
 
-        run_subprocess(
-            "https://manhua.dmzj.com/zuixihuanderenwangjidaiyanjle/")
+        run_subprocess("https://manhua.dmzj.com/zuixihuanderenwangjidaiyanjle/")
+
+
+class DefaultIndexSerializer(serializers.Serializer):
+
+    def to_representation(self, index_type="comic"):
+        data = {}
+        if index_type == "comic":
+            data = self.comic_index_block()
+        elif index_type == "book":
+            data = self.book_index_block()
+        return data
+
+    def get_index_carousel(self, queryset, comic_list):
+        content_id_list = []
+        for item in queryset:
+            if item.desc_type == ComicAdminModels.INDEX_BLOCK_DESC.Carousel:
+                content_id_list.append(item.content_id)
+        res = []
+        for i_id in content_id_list:
+            for item in comic_list:
+                if item['id'] == i_id:
+                    item['url'] = item.get('cover')[0] if item.get('cover') else ""
+                    res.append(item)
+        return res
+    
+    def get_index_left(self, content_id, comic_list):
+        for item in comic_list:
+            if item.get('id') == content_id:
+                item['url'] = item.get('cover')[0] if item.get('cover') else ""
+                item['desc_type'] = ComicAdminModels.INDEX_BLOCK_DESC.Photo_Left
+                return item
+    
+    def get_index_top(self, content_id, comic_list):
+        for item in comic_list:
+            if item.get('id') == content_id:
+                item['url'] = item.get('cover')[0] if item.get('cover') else ""
+                item['desc_type'] = ComicAdminModels.INDEX_BLOCK_DESC.Photo_Top
+                return item
+
+    def comic_index_block(self):
+        queryset = ComicAdminModels.IndexBlock.normal.filter(block_type=ComicAdminModels.INDEX_BLOCK_TYPE_DESC.Comic)
+
+        comic_id_list = [item.content_id for item in queryset] if queryset else []
+        comic_objs = ComicAdminModels.Comic.normal.filter(id__in=comic_id_list)
+        comic_list = ComicSerializer(comic_objs, many=True).data
+
+        data = []
+        data.append({'block_type': 'carousel', 'results': self.get_index_carousel(queryset, comic_list)})
+        for item in queryset:
+            temp_data = {}
+            if item.desc_type == ComicAdminModels.INDEX_BLOCK_DESC.Photo_Left:
+                temp_data = {'block_type': 'photo_left', 'results': self.get_index_left(item.content_id, comic_list)}
+            elif item.desc_type == ComicAdminModels.INDEX_BLOCK_DESC.Photo_Top:
+                temp_data = {'block_type': 'photo_top', 'results': self.get_index_top(item.content_id, comic_list)}
+            
+            if temp_data:
+                data.append(temp_data)
+
+        return data
+    
+    def book_index_block(self):
+        queryset = ComicAdminModels.IndexBlock.normal.filter(block_type=ComicAdminModels.INDEX_BLOCK_TYPE_DESC.Book)
+        pass

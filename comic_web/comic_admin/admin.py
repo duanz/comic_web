@@ -1,8 +1,13 @@
 from django.contrib import admin
 # from django.utils.safestring import mark_safe
-# from comic_admin.models import Author, Comic, Chapter, Image, ChapterImage, CoverImage
+from comic_admin.models import Author, Comic, Chapter, Image, ChapterImage, CoverImage, IndexBlock
 # from comic_web.utils import photo as photo_lib
 # # Register your models here.
+
+# admin.register(IndexBlock)
+@admin.register(IndexBlock)
+class AuthorAdmin(admin.ModelAdmin):
+    list_display = ('id', 'block_type', 'desc_type', 'content_id')
 
 # @admin.register(Author)
 # class AuthorAdmin(admin.ModelAdmin):

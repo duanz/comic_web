@@ -8,12 +8,13 @@ from rest_framework import mixins, filters
 from django_filters import rest_framework
 
 
-class IndexComicApiView(BaseApiView):
+class ComicIndexApiView(BaseApiView):
     """获取漫画首页"""
     permission_classes = (AllowAny, )
 
     def get(self, request, *args, **kwargs):
-        return Response(data={"title": "这是测试"})
+        data = ComicAdminSerializers.DefaultIndexSerializer().to_representation("comic")
+        return Response(data)
 
 
 class ComicCoverImageApiView(mixins.ListModelMixin, mixins.CreateModelMixin, BaseGenericAPIView):

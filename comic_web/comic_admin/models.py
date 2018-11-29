@@ -1,8 +1,7 @@
 # import datetime
 from djongo import models
+
 from comic_web.utils.base_model import BaseModel
-import django.utils.timezone as timezone
-from django.utils.safestring import mark_safe
 
 
 class GENDER_TYPE_DESC:
@@ -17,6 +16,17 @@ class IMAGE_TYPE_DESC:
     CHAPER_CONTENT = '2'
 
 
+class INDEX_BLOCK_DESC:
+    Carousel = "CA"
+    Photo_Left = "PL"
+    Photo_Top = "PT"
+
+
+class INDEX_BLOCK_TYPE_DESC:
+    Comic = "COMIC"
+    Book = "BOOK"
+
+
 GENDER_CHOICES = ((GENDER_TYPE_DESC.Male, '男'), (GENDER_TYPE_DESC.Female, '女'),
                   (GENDER_TYPE_DESC.Anonymous, '未知'))
 
@@ -26,11 +36,21 @@ IMAGE_TYPE = (
     (IMAGE_TYPE_DESC.CHAPER_CONTENT, '章节内容'),
 )
 
+BLOCK_DESC_CHOICES = (
+    (INDEX_BLOCK_DESC.Carousel, "轮播图"),
+    (INDEX_BLOCK_DESC.Photo_Left, "图片在左"),
+    (INDEX_BLOCK_DESC.Photo_Top, "图片在上"),
+)
+
+BLOCK_TYPE_CHOICES = (
+    (INDEX_BLOCK_TYPE_DESC.Comic, "漫画"),
+    (INDEX_BLOCK_TYPE_DESC.Book, "小说"),
+)
+
 
 class Author(BaseModel):
     name = models.CharField('作者名', max_length=60, default="anonymous")
-    gender = models.CharField(
-        '性别', max_length=2, default="A", choices=GENDER_CHOICES)
+    gender = models.CharField('性别', max_length=2, default="A", choices=GENDER_CHOICES)
     mobile_phone = models.CharField("手机号", default="", max_length=20)
 
     class Meta:
@@ -132,3 +152,10 @@ class CoverImage(BaseModel):
 
     class Meta:
         verbose_name_plural = '封面'
+
+
+class IndexBlock(BaseModel):
+    '''首页模块表'''
+    block_type = models.CharField("模块类型", null=False, max_length=10, default="COMIC", choices=BLOCK_TYPE_CHOICES)
+    desc_type = models.CharField("模块类型", null=False, max_length=10, default="CA", choices=BLOCK_DESC_CHOICES)
+    content_id = models.IntegerField("内容ID", null=False, default=0)
