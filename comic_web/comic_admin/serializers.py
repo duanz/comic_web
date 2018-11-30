@@ -1,4 +1,5 @@
 import os
+import copy
 from rest_framework import serializers
 from comic_admin import models as ComicAdminModels
 import subprocess
@@ -68,7 +69,6 @@ class ChapterDetailSerializer(serializers.ModelSerializer):
     def get_relate_chapter_id(self, obj):
         query_set = ComicAdminModels.Chapter.normal.filter(comic_id=obj.comic_id).values("id")
         id_list = [item['id'] for item in query_set] if query_set else []
-        print(id_list, obj.id)
         index = id_list.index(obj.id)
         if index == 0:
             return {"pre_id": 0, "next_id": id_list[1]}
@@ -86,8 +86,7 @@ class CommonImageSerializer(serializers.ModelSerializer):
 
     def to_representation(comic_id=None, chapter_id=None, img_type="chapter_content", quality="thumb", only_url=True):
         if comic_id:
-            comic_id_list = comic_id if isinstance(
-                comic_id, list) else [comic_id]
+            comic_id_list = comic_id if isinstance(comic_id, list) else [comic_id]
         elif chapter_id:
             chapter_id_list = chapter_id if isinstance(chapter_id, list) else [chapter_id]
 
@@ -124,7 +123,7 @@ class ComicSerializer(serializers.ModelSerializer):
         read_only_fields = ("cover", )
 
     def get_cover(self, obj):
-        return CommonImageSerializer.to_representation(comic_id=obj.id, img_type="comic_cover")
+        return CommonImageSerializer.to_representation(comic_id=obj.id, img_type="comic_cover", quality="title")
 
 
 class ComicDetailSerializer(serializers.ModelSerializer):
@@ -157,7 +156,9 @@ class SpydersUtilsSerializer(serializers.Serializer):
             manage_path = os.path.join(settings.BASE_DIR, 'manage.py')
             subprocess.Popen(['python', manage_path, task_type, "-u", url])
 
-        run_subprocess("https://manhua.dmzj.com/zuixihuanderenwangjidaiyanjle/")
+        # run_subprocess("https://manhua.dmzj.com/zuixihuanderenwangjidaiyanjle/")
+        run_subprocess("https://manhua.dmzj.com/nogunslife/")
+        
 
 
 class DefaultIndexSerializer(serializers.Serializer):
@@ -186,16 +187,18 @@ class DefaultIndexSerializer(serializers.Serializer):
     def get_index_left(self, content_id, comic_list):
         for item in comic_list:
             if item.get('id') == content_id:
-                item['url'] = item.get('cover')[0] if item.get('cover') else ""
-                item['desc_type'] = ComicAdminModels.INDEX_BLOCK_DESC.Photo_Left
-                return item
+                temp = copy.deepcopy(item)
+                temp['url'] = item.get('cover')[0] if item.get('cover') else ""
+                temp['desc_type'] = ComicAdminModels.INDEX_BLOCK_DESC.Photo_Left
+                return temp
     
     def get_index_top(self, content_id, comic_list):
         for item in comic_list:
             if item.get('id') == content_id:
-                item['url'] = item.get('cover')[0] if item.get('cover') else ""
-                item['desc_type'] = ComicAdminModels.INDEX_BLOCK_DESC.Photo_Top
-                return item
+                temp = copy.deepcopy(item)
+                temp['url'] = item.get('cover')[0] if item.get('cover') else ""
+                temp['desc_type'] = ComicAdminModels.INDEX_BLOCK_DESC.Photo_Top
+                return temp
 
     def comic_index_block(self):
         queryset = ComicAdminModels.IndexBlock.normal.filter(block_type=ComicAdminModels.INDEX_BLOCK_TYPE_DESC.Comic)

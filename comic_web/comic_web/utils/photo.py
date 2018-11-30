@@ -153,10 +153,6 @@ def save_upload_photo(photo_file, base_static_path=settings.UPLOAD_SAVE_PATH, ph
 
 
 def save_binary_photo(photo_file, base_static_path=settings.UPLOAD_SAVE_PATH, photo_type='photo', extension='.jpg'):
-    # raw_ext = photo_file.name.split('.')[-1]
-    # if raw_ext not in ['jpg', 'jpeg', 'png']:
-    #     return False
-
     photo_id = uuid.uuid4().hex
 
     d_path_raw = os.path.join(base_static_path, photo_type_dict[photo_type]['sub_path'],

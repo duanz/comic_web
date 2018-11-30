@@ -1,13 +1,14 @@
 from django.contrib import admin
-# from django.utils.safestring import mark_safe
+from django.utils.safestring import mark_safe
 from comic_admin.models import Author, Comic, Chapter, Image, ChapterImage, CoverImage, IndexBlock
-# from comic_web.utils import photo as photo_lib
+from comic_web.utils import photo as photo_lib
 # # Register your models here.
 
-# admin.register(IndexBlock)
+
 @admin.register(IndexBlock)
 class AuthorAdmin(admin.ModelAdmin):
     list_display = ('id', 'block_type', 'desc_type', 'content_id')
+
 
 # @admin.register(Author)
 # class AuthorAdmin(admin.ModelAdmin):
@@ -31,27 +32,27 @@ class AuthorAdmin(admin.ModelAdmin):
 #     image_data.short_description = u'品牌图片'
 
 
-# @admin.register(Comic)
-# class ComicAdmin(admin.ModelAdmin):
-#     list_display = ('id', 'title', 'author', 'collection_num', 'click_num', 'desc', 'markup', 'on_shelf', 'is_finished', 'cover_image_read')
-#     readonly_fields = ('cover_image_read', )
+@admin.register(Comic)
+class ComicAdmin(admin.ModelAdmin):
+    list_display = ('id', 'title', 'author', 'collection_num', 'click_num', 'desc', 'markup', 'on_shelf', 'is_finished', 'cover_image_read')
+    readonly_fields = ('cover_image_read', )
+    search_fields = ("title",)
 
-#     def cover_image_read(self, obj):
-#         all_cover_image_obj_list = CoverImage.normal.filter(comic_id=obj.id)
+    def cover_image_read(self, obj):
+        queryset = CoverImage.normal.filter(comic_id=obj.id).values("image_id")
 
-#         all_cover_image_id_list = [temp.id for temp in all_cover_image_obj_list] if all_cover_image_obj_list else []
+        image_set = Image.normal.filter(pk__in=[item.get("image_id") for item in queryset] if queryset else []).values('key')
 
-#         all_cover_image_list = Image.normal.filter(id__in=all_cover_image_id_list)
+        img_url_list = [photo_lib.get_thumb_img_url(item) for item in image_set] if image_set else []
 
-#         html_str = "<ul style='display:inline-flex;'>{}</ul>"
-#         li_str = "<li style='padding-right:3px;'><img src='{}' style='max-width: 50px' /></li>"
-#         all_li = ""
-#         for img in all_cover_image_list:
-#             img_url = photo_lib.build_photo_url(str(img.key), "thumbicon")
-#             all_li += li_str.format(img_url)
-#         return mark_safe(html_str.format(all_li))
+        html_str = "<ul style='display:inline-flex;'>{}</ul>"
+        li_str = "<li style='padding-right:3px;'><img src='{}' style='max-width: 50px' /></li>"
+        all_li = ""
+        for img_url in img_url_list:
+            all_li += li_str.format(img_url)
+        return mark_safe(html_str.format(all_li))
     
-#     cover_image_read.short_description = '封面图片'
+    cover_image_read.short_description = '封面图片'
 
 
 # @admin.register(Chapter)

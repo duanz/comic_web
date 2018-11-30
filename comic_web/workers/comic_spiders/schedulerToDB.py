@@ -360,7 +360,7 @@ class Scheduler(object):
         #        on_retry=lambda err, args, retry_num: logger.warning(
         #            'Failed to request url "%s" (%s), retrying.', args[1]['image_url'], str(err)),
         #        on_fail=lambda err, args, retry_num: logger.error('Failed to request target "%s" (%s)', args[1]['image_url'], str(err)))
-        async def download_with_db(image_url, name, chapter_id=0, comic_id=0, count=0, image_type="chapter_img"):
+        async def download_with_db(image_url, name, chapter_id=0, comic_id=0, count=0, image_type="chapter_content"):
             with (await self.sema):
                 logger.info('Start download: %s',
                             self._generate_download_info(name, "default save path"))
@@ -398,7 +398,7 @@ class Scheduler(object):
                     img.key = photo_info['id']
                     img.name = photo_info['name']
 
-                    if image_type == "chapter_img":
+                    if image_type == "chapter_content":
                         img.img_type = IMAGE_TYPE_DESC.CHAPER_CONTENT
                         img.save()
                         ChapterImage(comic_id=comic_id, chapter_id=chapter_id, image_id=img.id, order=count).save()
@@ -420,11 +420,11 @@ class Scheduler(object):
             # save chapter
             chapter_obj = self._save_chapter_db(self.comic_obj, k, chapter_count)
             chapter_count += 1
-            # count = 0
             
-            # for name, url in v.items():
-            #     future_list.append(download_with_db(image_url=url, name=name, chapter_id=chapter_obj.id, comic_id=self.comic_obj.id, count=count))
-            #     count += 1
+            count = 0
+            for name, url in v.items():
+                future_list.append(download_with_db(image_url=url, name=name, chapter_id=chapter_obj.id, comic_id=self.comic_obj.id, count=count))
+                count += 1
         future_list.append(download_with_db(
             image_url=info['cover'], name=self.comic_obj.title, comic_id=self.comic_obj.id, image_type="comic_cover"))
 
