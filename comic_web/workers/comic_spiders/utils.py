@@ -1,5 +1,8 @@
-import re, os, traceback
+import re
+import os
+import traceback
 from workers.comic_spiders import config, title
+
 
 def decode_packed_codes(code):
     def encode_base_n(num, n, table=None):
@@ -8,7 +11,8 @@ def decode_packed_codes(code):
             table = FULL_TABLE[:n]
 
         if n > len(table):
-            raise ValueError('base %d exceeds table length %d' % (n, len(table)))
+            raise ValueError('base %d exceeds table length %d' %
+                             (n, len(table)))
 
         if num == 0:
             return table[0]
@@ -36,6 +40,7 @@ def decode_packed_codes(code):
         r'\b(\w+)\b', lambda mobj: symbol_table[mobj.group(0)],
         obfucasted_code)
 
+
 def generate_aiohttp_session_config(**kwargs):
     params = {
         'timeout': 50,
@@ -46,6 +51,7 @@ def generate_aiohttp_session_config(**kwargs):
 
     return params
 
+
 def update_window_title(mode=None, msg=None):
     app_name = 'workers.comic_spiders'
 
@@ -53,22 +59,25 @@ def update_window_title(mode=None, msg=None):
 
     if not mode == None:
         window_title = window_title + ': %s' % mode
-    
+
     if not msg == None:
         window_title = window_title + ' - %s' % msg
 
     title.update(window_title)
-    
+
+
 def mkdir(path):
-    path_  = path.split('/')
+    path_ = path.split('/')
 
     for i in range(0, len(path_)):
         p = '/'.join(path_[0:i+1])
         if p and not os.path.exists(p):
             os.mkdir(p)
 
+
 def retry(max_num=5, on_retry=None, on_fail=None, on_fail_exit=False):
     remaining_num = max_num
+
     def decorate(func):
         async def _retry(*args, **kwargs):
             nonlocal max_num, remaining_num
@@ -77,20 +86,20 @@ def retry(max_num=5, on_retry=None, on_fail=None, on_fail_exit=False):
             except Exception as err:
                 if not on_retry == None:
                     # traceback.print_exc()
-                    on_retry(err=err, args=[args, kwargs], retry_num=max_num - remaining_num)
+                    on_retry(err=err, args=[args, kwargs],
+                             retry_num=max_num - remaining_num)
 
                 if remaining_num > 1:
                     remaining_num -= 1
                     return await _retry(*args, **kwargs)
                 else:
                     if not on_fail == None:
-                        on_fail(err=err, args=[args, kwargs], retry_num=max_num - remaining_num)
+                        on_fail(err=err, args=[args, kwargs],
+                                retry_num=max_num - remaining_num)
                         remaining_num = max_num
                         if on_fail_exit is True:
                             exit()
-                
-        
-        return _retry
-    
-    return decorate
 
+        return _retry
+
+    return decorate
