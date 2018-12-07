@@ -145,6 +145,7 @@ class ChapterImage(BaseModel):
 class CoverImage(BaseModel):
     '''封面图片中间表'''
     comic_id = models.IntegerField("漫画ID", null=False, default=0)
+    book_id = models.IntegerField("小说ID", null=False, default=0)
     chapter_id = models.IntegerField("章节ID", null=False, default=0)
     image_id = models.IntegerField("图片ID", null=True, default=0)
     order = models.IntegerField('排序位置', default=0)
