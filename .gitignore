@@ -57,3 +57,4 @@ docs/_build/
 target/
 
 mall_web_upload/
+comic_web/comic_web/settings_local.py
