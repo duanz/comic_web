@@ -1,6 +1,7 @@
 from book_admin import models as BookAdminModels
 from book_admin import serializers as BookAdminSerializers
 from book_admin import api_filters as BookAdminFilters
+from comic_admin import serializers as ComicAdminSerializers
 from comic_web.utils.permission import IsAuthorization, BaseApiView, BaseGenericAPIView
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -13,9 +14,8 @@ class BookIndexApiView(BaseApiView):
     permission_classes = (AllowAny, )
 
     def get(self, request, *args, **kwargs):
-        data = BookAdminSerializers.DefaultIndexSerializer().to_representation("book")
+        data = ComicAdminSerializers.DefaultIndexSerializer().to_representation("book")
         return Response(data)
-
 
 
 class BookListApiView(mixins.ListModelMixin, BaseGenericAPIView):
@@ -63,8 +63,8 @@ class BookChapterDetailApiView(mixins.RetrieveModelMixin, BaseGenericAPIView):
 
 
 class SpyderUtilsApiView(BaseApiView):
-    "get: 下发爬虫任务"
-    permission_classes = (IsAuthorization, )
+    "get: 下发小说爬虫任务"
+    permission_classes = (AllowAny, )
 
     def get(self, request, *args, **kwargs):
         BookAdminSerializers.SpydersUtilsSerializer().to_representation()

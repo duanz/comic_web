@@ -32,7 +32,8 @@ ALLOWED_HOSTS = ['*']
 APP_HOST = os.getenv('APP_HOST')
 
 # 上传文件保存目录
-UPLOAD_SAVE_PATH = os.getenv('UPLOAD_SAVE_PATH', os.path.join(BASE_DIR, 'static', 'mall_web_upload'))
+UPLOAD_SAVE_PATH = os.getenv('UPLOAD_SAVE_PATH', os.path.join(
+    BASE_DIR, 'static', 'mall_web_upload'))
 # 上传文件访问目录
 UPLOAD_STATIC_URL = os.getenv('UPLOAD_STATIC_URL', '/static/mall_web_upload/')
 

@@ -1,8 +1,8 @@
 import logging
 from django.core.management.base import BaseCommand
 # from workers.comic_spiders import main
-from workers.comic_spiders.schedulerToDB import Scheduler
-from comic_admin.models import Chapter
+from workers.book_spiders.schedulerToDB import Scheduler
+
 
 FORMAT = '%(asctime)s - %(message)s'
 logging.basicConfig(format=FORMAT)

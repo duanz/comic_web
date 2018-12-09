@@ -14,5 +14,8 @@ urlpatterns = [
 
 
     # utils   --- 2018.11.23
-    path(r'utils', api_views.SpyderUtilsApiView.as_view()),
+    path(r'utils/', api_views.SpyderUtilsApiView.as_view()),
+
+    # history   --- 2018.11.23
+    path(r'history/', api_views.HistoryApiView.as_view()),
 ]
