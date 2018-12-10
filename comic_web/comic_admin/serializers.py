@@ -2,6 +2,8 @@ import os
 import copy
 from rest_framework import serializers
 from comic_admin import models as ComicAdminModels
+from book_admin import models as BookAdminModels
+from book_admin import serializers as BookAdminSerializers
 import subprocess
 from django.conf import settings
 from comic_web.utils import photo as photo_lib
@@ -57,11 +59,16 @@ class ChapterDetailSerializer(serializers.ModelSerializer):
         format="%Y-%m-%d %H:%I:%S", required=False)
     image_url_list = serializers.SerializerMethodField()
     relate_chapter_id = serializers.SerializerMethodField()
+    comic_title = serializers.SerializerMethodField()
 
     class Meta:
         model = ComicAdminModels.Chapter
         fields = ("id", "comic_id", "title", "number", "order", "active", "create_at", 
-                  "origin_addr", "image_url_list", "relate_chapter_id")
+                  "origin_addr", "image_url_list", "relate_chapter_id", "comic_title")
+    
+    def get_comic_title(self, obj):
+        comic_obj = ComicAdminModels.Comic.normal.filter(id=obj.comic_id).first()
+        return comic_obj.title
 
     def get_image_url_list(self, obj):
         return CommonImageSerializer.to_representation(chapter_id=obj.id, quality="title", only_url=True)
@@ -84,9 +91,11 @@ class CommonImageSerializer(serializers.ModelSerializer):
         model = ComicAdminModels.Image
         fields = ('__all__')
 
-    def to_representation(comic_id=None, chapter_id=None, img_type="chapter_content", quality="thumb", only_url=True):
+    def to_representation(comic_id=None, book_id=None, chapter_id=None, img_type="chapter_content", quality="thumb", only_url=True):
         if comic_id:
             comic_id_list = comic_id if isinstance(comic_id, list) else [comic_id]
+        elif book_id:
+            book_id_list = book_id if isinstance(book_id, list) else [book_id]
         elif chapter_id:
             chapter_id_list = chapter_id if isinstance(chapter_id, list) else [chapter_id]
 
@@ -96,7 +105,12 @@ class CommonImageSerializer(serializers.ModelSerializer):
             queryset = ComicAdminModels.CoverImage.normal.filter(chapter_id__in=chapter_id_list, active=True).values("image_id")
         elif img_type == "comic_cover":
             queryset = ComicAdminModels.CoverImage.normal.filter(comic_id__in=comic_id_list, active=True).values("image_id")
+        elif img_type == "book_cover":
+            queryset = ComicAdminModels.CoverImage.normal.filter(book_id__in=book_id_list, active=True).values("image_id")
         
+        # 仅仅用在测试
+        queryset = [{"image_id": 137}] if not queryset else queryset
+
         if only_url:
             img_set = ComicAdminModels.Image.normal.filter(pk__in=[item.get("image_id") for item in queryset] if queryset else []).values('key')
             if quality == "thumb":
@@ -160,7 +174,6 @@ class SpydersUtilsSerializer(serializers.Serializer):
         run_subprocess("https://manhua.dmzj.com/nogunslife/")
         
 
-
 class DefaultIndexSerializer(serializers.Serializer):
 
     def to_representation(self, index_type="comic"):
@@ -223,4 +236,22 @@ class DefaultIndexSerializer(serializers.Serializer):
     
     def book_index_block(self):
         queryset = ComicAdminModels.IndexBlock.normal.filter(block_type=ComicAdminModels.INDEX_BLOCK_TYPE_DESC.Book)
-        pass
+
+        book_id_list = [item.content_id for item in queryset] if queryset else []
+        book_objs = BookAdminModels.Book.normal.filter(id__in=book_id_list)
+        book_list = BookAdminSerializers.BookSerializer(book_objs, many=True).data
+
+        data = []
+        data.append({'block_type': 'carousel',
+                     'results': self.get_index_carousel(queryset, book_list)})
+        for item in queryset:
+            temp_data = {}
+            if item.desc_type == ComicAdminModels.INDEX_BLOCK_DESC.Photo_Left:
+                temp_data = {'block_type': 'photo_left', 'results': self.get_index_left(item.content_id, book_list)}
+            elif item.desc_type == ComicAdminModels.INDEX_BLOCK_DESC.Photo_Top:
+                temp_data = {'block_type': 'photo_top', 'results': self.get_index_top(item.content_id, book_list)}
+            
+            if temp_data:
+                data.append(temp_data)
+
+        return data

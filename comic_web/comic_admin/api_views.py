@@ -27,7 +27,7 @@ class ComicCoverImageApiView(mixins.ListModelMixin, mixins.CreateModelMixin, Bas
 
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
-    
+
     def post(self, request, *args, **kwargs):
         return self.create(request, *args, **kwargs)
 
@@ -83,3 +83,19 @@ class SpyderUtilsApiView(BaseApiView):
     def get(self, request, *args, **kwargs):
         ComicAdminSerializers.SpydersUtilsSerializer().to_representation()
         return Response("success")
+
+
+class HistoryApiView(BaseApiView):
+    "get: 获取浏览历史"
+    permission_classes = (AllowAny, )
+
+    def get(self, request, *args, **kwargs):
+        data = [
+            {'id': 1, 'data_type': 'book', 'title': '我不成仙',
+                'chapter_id': 50, 'content_id': 1, 'chapter_title': '第50章 要上天吗'},
+            {'id': 2, 'data_type': 'book', 'title': '我不成仙',
+                'chapter_id': 51, 'content_id': 1, 'chapter_title': '第60章 要上天'},
+            {'id': 3, 'data_type': 'comic', 'title': '这是漫画',
+                'chapter_id': 1, 'content_id': 2, 'chapter_title': '第1章 测ui'},
+        ]
+        return Response(data)

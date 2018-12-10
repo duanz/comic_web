@@ -1,14 +1,14 @@
-import asyncio
-
 import aiofiles
-import aiohttp
 import filetype
 
+import asyncio
+import aiohttp
 from comic_admin.models import Author, Image, IMAGE_TYPE_DESC, CoverImage
 from book_admin.models import Chapter, Book
 from comic_web.utils import photo as photo_lib
 
-from workers.comic_spiders import base_logger, utils
+
+from workers.comic_spiders import base_logger
 # for test
 from workers.comic_spiders.parser.SimpleParser import SimpleParser
 from workers.comic_spiders.utils import retry
@@ -44,7 +44,7 @@ class Scheduler(object):
         self.verify_ssl = verify_ssl
 
         self.chapter_img_dict = {}
-        self.book_obj = None
+        self.comic_obj = None
 
         self.sema = asyncio.Semaphore(self.max_connection_num)
 
@@ -63,13 +63,14 @@ class Scheduler(object):
         # return
 
         if not info:
-            logger.error('No book infomation found.')
+            logger.error('No comic infomation found.')
             return
         else:
-            logger.info('Book name: %s', info.get('name'))
+            logger.info('Comic name: %s', info.get('name'))
 
         logger.info('Fetch chapter list')
         clist = self._get_chapter_list(base_url=self.url)
+        # return
 
         if not clist:
             logger.error('No chapter list found')
@@ -77,10 +78,13 @@ class Scheduler(object):
         else:
             logger.info('Chapter number: %d', len(clist))
 
-        logger.info('Start save databases')
-        
-        self._start_save_db(info, clist)
-        self._save_chapter_db(self.book_obj, clist)
+        logger.info('Fetch image url list')
+        # img_list = self._get_image_url_list(clist)
+        # logger.info('Total image number: %s', self.total_image_num)
+        # logger.info('Start download images')
+        # self._start_download(img_list, info['name'])
+        self._start_save_db(clist, info)
+        # self._save_chapter_img_db(self.comic_obj, self.chapter_img_dict)
 
         logger.info('Download comlpleted')
 
@@ -98,6 +102,7 @@ class Scheduler(object):
                    'Failed to get info %s (%s)', args[0][0], str(err)),
                on_fail_exit=True)
         async def fetch(url):
+            # async with aiohttp.ClientSession(connector=ProxyConnector(proxy='http://192.168.28.1:8888')) as sess:
             async with self.aiohttp_session.get(url, verify_ssl=self.verify_ssl) as resp:
                 nonlocal info
                 ret_data = await resp.text()
@@ -112,22 +117,170 @@ class Scheduler(object):
         logger.debug('Starting fetch chapter list')
         chapter_list = {}
 
+        # chapter_list = {
+        #     'chapter_name': 'url'
+        # }
+
+        # @retry(stop=stop_after_attempt(self.max_retry_num))
+        # @retry(max_num=self.max_retry_num)
         @retry(max_num=self.max_retry_num,
                on_retry=lambda err, args, retry_num: logger.warning(
-                   'Failed to get info %s (%s), retrying.', args[0][0], str(err)),
+                   'Failed to fetch chapter list %s (%s), retrying.', args[0][0], str(err)),
                on_fail=lambda err, args, retry_num: logger.error(
-                   'Failed to get info %s (%s)', args[0][0], str(err)),
+                   'Failed to fetch chapter list %s (%s)', args[0][0], str(err)),
                on_fail_exit=True)
-        async def fetch(url):
-            async with self.aiohttp_session.get(url, verify_ssl=self.verify_ssl) as resp:
-                nonlocal chapter_list
-                ret_data = await resp.text()
-                chapter_list = await self.parser.parse_info(ret_data)
+        async def fetch(url, asyncio_loop, page=1):
+            with (await self.sema):
+                async with self.aiohttp_session.get(url) as ret:
+
+                    ret_data = await ret.text()
+                    parsed_data = await self.parser.parse_chapter(ret_data)
+
+                    chapter_list.update(parsed_data[0])
+
+                    # if self.parser.chapter_mode:
+                    #     chapter_list.update(parsed_data[0])
+                    # else:
+                    #     for i in parsed_data[0]:
+                    #         chapter_list.setdefault(
+                    #             '{}-{}'.format(page, parsed_data[0].index(i)), i)
+
+                    # if len(parsed_data) > 1 and not parsed_data[1] is None:
+                    #     page += 1
+                    #     await fetch(parsed_data[1], asyncio_loop, page)
 
         loop = asyncio.get_event_loop()
-        loop.run_until_complete(asyncio.gather(fetch(base_url)))
+        loop.run_until_complete(asyncio.gather(fetch(base_url, loop)))
 
         return chapter_list
+
+    def _get_image_url_list(self, chapter_list):
+
+        image_url_list = {}
+
+        # image_url_list = {
+        #     'chapter_name': {
+        #         'file_name': 'url'
+        #     }
+        #     # ...
+        # }
+
+        # @retry(max_num=self.max_retry_num,
+        #    on_retry=lambda err, args, num: logger.warning('Failed to fetch chapter list (%s=>%s)', args[0][0], args[0][1]))
+        total_image_num = 0
+
+        @retry(max_num=self.max_retry_num,
+               on_retry=lambda err, args, retry_num: logger.warning(
+                   'Failed to fetch image list "%s" (%s), retrying.', str(args[0]), str(err)),
+               on_fail=lambda err, args, retry_num: logger.error(
+                   'Failed to fetch image list "%s" (%s)', str(args[0]), str(err)),
+               on_fail_exit=True)
+        async def fetch(chapter_name, chapter_url):
+            nonlocal total_image_num
+            with (await self.sema):
+                async with self.aiohttp_session.get(chapter_url, verify_ssl=self.verify_ssl) as resp:
+                    image_list = await self.parser.parse_image_list(await resp.text())
+                    total_image_num += len(image_list)
+                    image_url_list.update({chapter_name: image_list})
+
+        loop = asyncio.get_event_loop()
+        future_list = []
+
+        for k, v in chapter_list.items():
+            future_list.append(fetch(k, v))
+
+        loop.run_until_complete(asyncio.gather(*future_list))
+        self.total_image_num = total_image_num
+        return image_url_list
+
+    def _start_download(self, image_url_list, comic_name):
+        # 解藕希望
+
+        # @retry(stop=stop_after_attempt(self.max_retry_num), after=after_log(logger, logging.DEBUG))
+        # @retry(max_num=self.max_retry_num, on_retry=self._downloader_on_retry)
+        @retry(max_num=self.max_retry_num,
+               on_retry=lambda err, args, retry_num: logger.warning(
+                   'Failed to update downloading status (%s), retrying.', str(err)),
+               on_fail=lambda err, args, retry_num: logger.error('Failed to update downloading status (%s)', str(err)))
+        async def update_count(save_path, name):
+            logger.info('Download complete: %s',
+                        self._generate_download_info(name, save_path))
+            self.download_complete_number += 1
+            if '_on_download_complete' in dir(self.parser):
+                getattr(self, '_on_download_complete')()
+
+        # @retry(stop=stop_after_attempt(self.max_retry_num), after=after_log(logger, logging.DEBUG))
+        # @retry(max_num=self.max_retry_num, on_retry=self._downloader_on_retry)
+        @retry(max_num=self.max_retry_num,
+               on_retry=lambda err, args, retry_num: logger.warning(
+                   'Failed to save file "%s" (%s), retrying.', args[1]['save_path'], str(err)),
+               on_fail=lambda err, args, retry_num: logger.error('Failed to save file "%s" (%s)', args[1]['save_path'], str(err)))
+        async def save_file(binary, save_path, name):
+            logger.debug('Saving file %s',
+                         self._generate_download_info(name, save_path))
+            async with aiofiles.open(save_path, 'wb') as f:
+                await f.write(binary)
+                await update_count(save_path=save_path, name=name)
+
+        @retry(max_num=self.max_retry_num,
+               on_retry=lambda err, args, retry_num: logger.warning(
+                   'Failed to request url "%s" (%s), retrying.', args[1]['image_url'], str(err)),
+               on_fail=lambda err, args, retry_num: logger.error('Failed to request target "%s" (%s)', args[1]['image_url'], str(err)))
+        async def download(image_url, save_path, name):
+            with (await self.sema):
+                logger.info('Start download: %s',
+                            self._generate_download_info(name, save_path))
+                # utils.mkdir('/'.join(save_path.split('/')[:-1]))
+                # async with aiohttp.ClientSession(headers=self.header) as session:
+
+                if self.fetch_only:
+                    logger.warning(
+                        'Fetch only mode is on, all downloading process will not run')
+                    return
+
+                async with self.aiohttp_session.get(image_url, verify_ssl=self.verify_ssl) as resp:
+                    resp_data = await resp.content.read()
+                    if 'on_download_complete' in dir(self.parser):
+                        resp_data = getattr(
+                            self.parser, 'on_download_complete')(resp_data)
+
+                    if 'filename_extension' in dir(self.parser):
+                        filename_extension = self.parser.filename_extension
+                    else:
+                        filename_extension = filetype.guess(
+                            resp_data).extension
+
+                    if filename_extension:
+                        save_path += '.' + filename_extension
+                    else:
+                        logger.warning('unknown filetype')
+
+                    # return (resp_data, save_file)
+                    await save_file(binary=resp_data, save_path=save_path, name=name)
+
+        loop = asyncio.get_event_loop()
+        future_list = []
+
+        for k, v in image_url_list.items():
+            for name, url in v.items():
+                # future_list.append(download(url, path + ))
+                # path = '_temp/' + comic_name +  k + '/'+ name
+                if 'chapter_mode' in dir(self.parser) and not self.parser.chapter_mode:
+                    path = '/'.join([self.output_path, comic_name, name])
+                else:
+                    path = '/'.join([self.output_path, comic_name, k, name])
+
+                future_list.append(
+                    download(image_url=url, save_path=path, name=name))
+
+        loop.run_until_complete(asyncio.gather(*future_list))
+
+    def _generate_download_info(self, name, path):
+        return name + ' => ' + path
+
+    def _downloader_on_retry(self, err, args, retry_num):
+        logger.warning('Download fail (%s) %s, retry number: %s', str(err),
+                       self._generate_download_info(args[1]['name'], args[1]['save_path']), retry_num)
 
     def _close_request_session(self):
         asyncio.get_event_loop().run_until_complete(
@@ -136,14 +289,46 @@ class Scheduler(object):
     def __del__(self):
         self._close_request_session()
 
-    def _start_save_db(self, info, chapter_list):
+    def _on_download_complete(self):
+        pass
+
+    def _call_parser_hook(self, hook_name):
+        pass
+
+    def _start_save_db(self, chapter_list, info):
         # 解藕希望
+
+        # @retry(stop=stop_after_attempt(self.max_retry_num), after=after_log(logger, logging.DEBUG))
+        # @retry(max_num=self.max_retry_num, on_retry=self._downloader_on_retry)
+        @retry(max_num=self.max_retry_num,
+               on_retry=lambda err, args, retry_num: logger.warning(
+                   'Failed to update downloading status (%s), retrying.', str(err)),
+               on_fail=lambda err, args, retry_num: logger.error('Failed to update downloading status (%s)', str(err)))
+        async def update_count(save_path, name):
+            logger.info('Download complete: %s',
+                        self._generate_download_info(name, save_path))
+            self.download_complete_number += 1
+            if '_on_download_complete' in dir(self.parser):
+                getattr(self, '_on_download_complete')()
+
+        # @retry(stop=stop_after_attempt(self.max_retry_num), after=after_log(logger, logging.DEBUG))
+        # @retry(max_num=self.max_retry_num, on_retry=self._downloader_on_retry)
+        @retry(max_num=self.max_retry_num,
+               on_retry=lambda err, args, retry_num: logger.warning(
+                   'Failed to save file "%s" (%s), retrying.', args[1]['save_path'], str(err)),
+               on_fail=lambda err, args, retry_num: logger.error('Failed to save file "%s" (%s)', args[1]['save_path'], str(err)))
+        async def save_file(binary, save_path, name):
+            logger.debug('Saving file %s',
+                         self._generate_download_info(name, save_path))
+            async with aiofiles.open(save_path, 'wb') as f:
+                await f.write(binary)
+                await update_count(save_path=save_path, name=name)
 
         # @retry(max_num=self.max_retry_num,
         #        on_retry=lambda err, args, retry_num: logger.warning(
         #            'Failed to request url "%s" (%s), retrying.', args[1]['image_url'], str(err)),
         #        on_fail=lambda err, args, retry_num: logger.error('Failed to request target "%s" (%s)', args[1]['image_url'], str(err)))
-        async def download_with_db(image_url, name, chapter_id=0, book_id=0, count=0, image_type="chapter_content"):
+        async def download_with_db(image_url, name, book_id=0, image_type="chapter_content"):
             with (await self.sema):
                 logger.info('Start download: %s',
                             self._generate_download_info(name, "default save path"))
@@ -156,11 +341,26 @@ class Scheduler(object):
                     )
                     return
 
-                async with self.aiohttp_session.get(image_url, verify_ssl=self.verify_ssl) as resp:
+                async with self.aiohttp_session.get(
+                        image_url, verify_ssl=self.verify_ssl) as resp:
                     resp_data = await resp.content.read()
                     if 'on_download_complete' in dir(self.parser):
-                        resp_data = getattr(self.parser, 'on_download_complete')(resp_data)
+                        resp_data = getattr(self.parser,
+                                            'on_download_complete')(resp_data)
 
+                    # if 'filename_extension' in dir(self.parser):
+                    #     filename_extension = self.parser.filename_extension
+                    # else:
+                    #     filename_extension = filetype.guess(
+                    #         resp_data).extension
+
+                    # if filename_extension:
+                    #     save_path += '.' + filename_extension
+                    # else:
+                    #     logger.warning('unknown filetype')
+
+                    # return (resp_data, save_file)
+                    # await photo_lib.save_upload_photo(resp_data)
                     photo_info = photo_lib.save_binary_photo(resp_data)
                     img = Image()
                     img.key = photo_info['id']
@@ -171,7 +371,7 @@ class Scheduler(object):
                         img.save()
                         self._save_book_cover(book_id=book_id, image_id=img.id)
                     return photo_info
-        
+
         async def download_with_db_chapter(chapter_url, name, chapter_id=0, book_id=0, count=0):
             with (await self.sema):
                 logger.info('Start download: %s',
@@ -187,9 +387,10 @@ class Scheduler(object):
 
                 async with self.aiohttp_session.get(chapter_url, verify_ssl=self.verify_ssl) as resp:
                     resp_data = await resp.content.read()
-                    chapter_content = await self.parser.parse_chapter_content(ret_data)
+                    chapter_content = await self.parser.parse_chapter_content(resp_data)
 
-                    Chapter.normal.filter(book_id=book_id, title=name).update(content=chapter_content)                   
+                    Chapter.normal.filter(book_id=book_id, title=name).update(
+                        content=chapter_content)
 
         loop = asyncio.get_event_loop()
         # chapter imgs info
@@ -201,10 +402,11 @@ class Scheduler(object):
 
         future_list.append(download_with_db(
             image_url=info['cover'], name=self.book_obj.title, book_id=self.book_obj.id, image_type="book_cover"))
-        
-        for item in chapter_list:
+
+        # save chapter content
+        for title, c_url in chapter_list.items():
             future_list.append(download_with_db_chapter(
-                chapter_url=item.value(), name=item.key(), book_id=self.book_obj.id))
+                chapter_url=c_url, name=title, book_id=self.book_obj.id))
 
         loop.run_until_complete(asyncio.gather(*future_list))
         # return
@@ -221,7 +423,7 @@ class Scheduler(object):
         book.origin_addr = self.url
         book.save()
         return book
-    
+
     def _save_book_cover(self, book_id, image_id):
         cover = CoverImage.normal.filter(book_id=book_id, image_id=image_id)
         if not cover:
@@ -239,12 +441,14 @@ class Scheduler(object):
         author.save()
         return author
 
-    def _save_all_chapter_db(self, book, chapter_list):
+    def _save_all_chapter_db(self, book, chapter_dict):
         chapter_obj_list = []
-        for index, chapter in enumerate(chapter_list, 0):
-            flag = Chapter.normal.filter(book_id=book.id, title=chapter.key()).exists()
+        for index, chapter in enumerate(chapter_dict, 0):
+            flag = Chapter.normal.filter(
+                book_id=book.id, title=chapter).exists()
             if not flag:
-                chapter_obj = Chapter(book_id=book.id, title=chapter.key(), order=index, origin_addr=chapter.valuse())
+                chapter_obj = Chapter(
+                    book_id=book.id, title=chapter, order=index, origin_addr=chapter_dict[chapter])
                 chapter_obj_list.append(chapter_obj)
-        
+
         Chapter.normal.bulk_create(chapter_obj_list)

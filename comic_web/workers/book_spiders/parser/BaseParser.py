@@ -48,23 +48,10 @@ class BaseParser(metaclass=ABCMeta):
         """
 
     @abstractmethod
-    async def parse_image_list(self, data):
-        """ Parse image URL from received data.
-            Args:
+    async def parse_chapter_content(self, data):
+        """parse chapter content
+        Args:
                 data: data come from requesting specified URL.
-
-            Returns:
-                {
-                    'file_name': 'url'
-                }
-        """
-
-    async def parse_downloaded_data(self, data):
-        """ Process the downloaded data. (optional)
-            You can do some action (such as decrypt, unzip, etc) in there
-            Args:
-                data: data come from requesting specified URL.
-
-            Returns:
-                processed data
+        Return: 
+            string: chapter content
         """
