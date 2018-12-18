@@ -48,10 +48,12 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'comic_admin',
     'book_admin',
+    'members',
     'rest_framework',
     'django_filters',
     'rest_framework_swagger',
     'rest_framework.authtoken',
+    'django_crontab',
 ]
 
 MIDDLEWARE = [
@@ -151,6 +153,12 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 AUTH_USER_MODEL = 'auth.User'
+
+# 定时任务
+CRONJOBS = [
+    # 表示每分钟执行一次
+    ('*/1 * * * *', 'comic_web.workers.spiders.work.task')
+]
 
 # 默认分页数量
 PAGINATE_BY = 30

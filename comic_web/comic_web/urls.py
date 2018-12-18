@@ -27,5 +27,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path(r'api/', include('comic_admin.api_urls', namespace='comic_api')),
     path(r'api/', include('book_admin.api_urls', namespace='book_api')),
+    path(r'api/', include('members.api_urls', namespace='member_api')),
     path(r'api/', swagger_view, name='api-docs'),
 ]

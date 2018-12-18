@@ -1,4 +1,5 @@
 from djongo import models
+
 # from django.contrib.auth.models import AbstractUser
 from comic_web.utils.base_model import BaseModel
 import django.utils.timezone as timezone
@@ -6,8 +7,20 @@ import datetime
 
 
 class HISTORY_DATA_TYPE_DESC:
-    BOOK = "BOOK",
-    COMIC = "COMIC",
+    BOOK = "BOOK"
+    COMIC = "COMIC"
+
+
+class TASK_TYPE_DESC:
+    BOOK_INSERT = "BOOK_INSERT"
+    COMIC_INSERT = "COMIC_INSERT"
+
+
+class TASK_STATUS_DESC:
+    WAIT = "WAIT"
+    RUNNING = "RUNNING"
+    FINISH = "FINISH"
+    FAILD = "FAILD"
 
 
 HISTORY_DATA_TYPE = (
@@ -15,18 +28,37 @@ HISTORY_DATA_TYPE = (
     (HISTORY_DATA_TYPE_DESC.COMIC, "漫画"),
 )
 
+TASK_TYPE = (
+    (TASK_TYPE_DESC.BOOK_INSERT, "新增小说"),
+    (TASK_TYPE_DESC.COMIC_INSERT, "新增漫画"),
+)
+
+TASK_STATUS = (
+    (TASK_STATUS_DESC.WAIT, "等待执行"),
+    (TASK_STATUS_DESC.RUNNING, "执行中"),
+    (TASK_STATUS_DESC.FINISH, "执行结束"),
+    (TASK_STATUS_DESC.FAILD, "执行失败"),
+)
+
 
 class MemberViewHistory(BaseModel):
-    {'id': 1, 'data_type': 'book', 'title': '我不成仙',
-     'chapter_id': 50, 'content_id': 1, 'chapter_title': '第50章 要上天吗'}
-
     user_id = models.IntegerField("用户ID", default=0)
-    data_type = models.CharField(
-        "数据类型", default="", max_length=10, choices=HISTORY_DATA_TYPE)
+    data_type = models.CharField("数据类型", default="", max_length=10, choices=HISTORY_DATA_TYPE)
     title = models.CharField("主题", default="", max_length=15)
     chapter_title = models.CharField("章节主题", default="", max_length=15)
+    active = models.BooleanField("是否生效", default=True)
     content_id = models.IntegerField("主题ID", default=0)
     chapter_id = models.IntegerField("章节ID", default=0)
+
+
+class Task(BaseModel):
+    task_type = models.CharField("任务类型", default="", max_length=10, choices=TASK_TYPE)
+    active = models.BooleanField("是否生效", default=True)
+    user_id = models.IntegerField("下发任务用户ID", default=0)
+    task_status = models.CharField("任务状态", default="", max_length=10, choices=TASK_STATUS)
+    content = models.CharField("任务内容", default="", max_length=300)
+    markup = models.CharField("任务备注", default="", max_length=50)
+
 
 # class Member(BaseModel):
 #     open_id = models.CharField(null=True, max_length=30)

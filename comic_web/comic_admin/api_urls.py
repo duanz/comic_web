@@ -11,11 +11,4 @@ urlpatterns = [
     path(r'comic/cover/', api_views.ComicCoverImageApiView.as_view()),
 
     path(r'comic/chapter/<int:pk>/', api_views.ComicChapterDetailApiView.as_view()),
-
-
-    # utils   --- 2018.11.23
-    path(r'utils/', api_views.SpyderUtilsApiView.as_view()),
-
-    # history   --- 2018.11.23
-    path(r'history/', api_views.HistoryApiView.as_view()),
 ]
