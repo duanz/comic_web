@@ -157,7 +157,7 @@ AUTH_USER_MODEL = 'auth.User'
 # 定时任务
 CRONJOBS = [
     # 表示每分钟执行一次
-    ('*/1 * * * *', 'comic_web.workers.spiders.work.task')
+    ('*/1 * * * *', 'comic_admin.workers.spiders.work.task', '>>{}/name.log'.format(UPLOAD_SAVE_PATH))
 ]
 
 # 默认分页数量

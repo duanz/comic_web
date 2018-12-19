@@ -2,8 +2,6 @@ from djongo import models
 
 # from django.contrib.auth.models import AbstractUser
 from comic_web.utils.base_model import BaseModel
-import django.utils.timezone as timezone
-import datetime
 
 
 class HISTORY_DATA_TYPE_DESC:
@@ -43,7 +41,7 @@ TASK_STATUS = (
 
 class MemberViewHistory(BaseModel):
     user_id = models.IntegerField("用户ID", default=0)
-    data_type = models.CharField("数据类型", default="", max_length=10, choices=HISTORY_DATA_TYPE)
+    data_type = models.CharField("数据类型", default=HISTORY_DATA_TYPE_DESC.BOOK, max_length=10, choices=HISTORY_DATA_TYPE)
     title = models.CharField("主题", default="", max_length=15)
     chapter_title = models.CharField("章节主题", default="", max_length=15)
     active = models.BooleanField("是否生效", default=True)
@@ -52,10 +50,10 @@ class MemberViewHistory(BaseModel):
 
 
 class Task(BaseModel):
-    task_type = models.CharField("任务类型", default="", max_length=10, choices=TASK_TYPE)
-    active = models.BooleanField("是否生效", default=True)
+    task_type = models.CharField("任务类型", default=TASK_TYPE_DESC.BOOK_INSERT, max_length=10, choices=TASK_TYPE)
+    active = models.BooleanField("是否生效", default=False)
     user_id = models.IntegerField("下发任务用户ID", default=0)
-    task_status = models.CharField("任务状态", default="", max_length=10, choices=TASK_STATUS)
+    task_status = models.CharField("任务状态", default=TASK_STATUS_DESC.WAIT, max_length=10, choices=TASK_STATUS)
     content = models.CharField("任务内容", default="", max_length=300)
     markup = models.CharField("任务备注", default="", max_length=50)
 
