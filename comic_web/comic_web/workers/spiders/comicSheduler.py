@@ -4,11 +4,11 @@ import aiohttp
 from comic_admin.models import Comic, Author, Chapter, Image, IMAGE_TYPE_DESC, ChapterImage, CoverImage
 from comic_web.utils import photo as photo_lib
 
-from spiders.tools import base_logger
+from comic_web.workers.spiders.tools import base_logger
 # for test
-from spiders.comic_parser.SimpleParser import SimpleParser
-from spiders.tools.utils import retry
-from spiders.tools.aiohttp_proxy_connector import ProxyConnector
+from comic_web.workers.spiders.comic_parser.SimpleParser import SimpleParser
+from comic_web.workers.spiders.tools.utils import retry
+from comic_web.workers.spiders.tools.aiohttp_proxy_connector import ProxyConnector
 logger = base_logger.getLogger(__name__)
 
 

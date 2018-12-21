@@ -1,4 +1,4 @@
-from spiders.book_parser.BaseParser import BaseParser
+from comic_web.workers.spiders.book_parser.BaseParser import BaseParser
 from pyquery import PyQuery as pq
 
 

@@ -7,11 +7,11 @@ import filetype
 from comic_admin.models import Comic, Author, Chapter, Image, IMAGE_TYPE_DESC, ChapterImage, CoverImage
 from comic_web.utils import photo as photo_lib
 
-from workers.comic_spiders import base_logger, utils
+from comic_web.workers.spiders.tools import base_logger, utils
 # for test
-from workers.comic_spiders.parser.SimpleParser import SimpleParser
-from workers.comic_spiders.utils import retry
-from workers.comic_spiders.aiohttp_proxy_connector import ProxyConnector
+from comic_web.workers.spiders.comic_parser.SimpleParser import SimpleParser
+from comic_web.workers.spiders.tools.utils import retry
+from comic_web.workers.spiders.tools.aiohttp_proxy_connector import ProxyConnector
 logger = base_logger.getLogger(__name__)
 
 
@@ -420,7 +420,7 @@ class Scheduler(object):
             # save chapter
             chapter_obj = self._save_chapter_db(self.comic_obj, k, chapter_count)
             chapter_count += 1
-            
+
             count = 0
             for name, url in v.items():
                 future_list.append(download_with_db(image_url=url, name=name, chapter_id=chapter_obj.id, comic_id=self.comic_obj.id, count=count))
@@ -442,7 +442,7 @@ class Scheduler(object):
         comic.title = info.get('name')
         comic.save()
         return comic
-    
+
     def _save_comic_cover(self, comic_id, image_id):
         cover = CoverImage.normal.filter(comic_id=comic_id, image_id=image_id)
         if not cover:

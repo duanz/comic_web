@@ -1,7 +1,7 @@
 from members import models as MemberModels
-from spiders.tools import parser_selector
-from spiders.bookSheduler import Scheduler as BookSheduler
-from spiders.comicSheduler import Scheduler as ComicSheduler
+from comic_web.workers.spiders.tools import parser_selector
+from comic_web.workers.spiders.bookSheduler import Scheduler as BookSheduler
+from comic_web.workers.spiders.comicSheduler import Scheduler as ComicSheduler
 from django.conf import settings
 import logging
 

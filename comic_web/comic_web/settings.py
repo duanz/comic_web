@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_crontab',
     'comic_admin',
     'book_admin',
     'members',
@@ -53,7 +54,6 @@ INSTALLED_APPS = [
     'django_filters',
     'rest_framework_swagger',
     'rest_framework.authtoken',
-    'django_crontab',
 ]
 
 MIDDLEWARE = [
@@ -157,7 +157,7 @@ AUTH_USER_MODEL = 'auth.User'
 # 定时任务
 CRONJOBS = [
     # 表示每分钟执行一次
-    ('*/1 * * * *', 'comic_admin.workers.spiders.work.task', '>>{}/name.log'.format(UPLOAD_SAVE_PATH))
+    ('*/1 * * * *', 'comic_web.workers.spiders.work.task', '>>/home/duan/mall_web_upload/name.log')
 ]
 
 # 默认分页数量

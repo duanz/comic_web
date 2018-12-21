@@ -1,6 +1,6 @@
-from spiders.comic_parser.BaseParser import BaseParser
+from comic_web.workers.spiders.comic_parser.BaseParser import BaseParser
 from pyquery import PyQuery as pq
-from spiders.tools import utils
+from comic_web.workers.spiders.tools import utils
 import json
 import re
 import urllib

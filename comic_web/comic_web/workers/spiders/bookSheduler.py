@@ -5,11 +5,11 @@ from book_admin.models import Chapter, Book
 from comic_web.utils import photo as photo_lib
 
 
-from spiders.tools import base_logger
+from comic_web.workers.spiders.tools import base_logger
 # for test
-from spiders.book_parser.BiqudaoParser import BiqudaoParser
-from spiders.tools.utils import retry
-from spiders.tools.aiohttp_proxy_connector import ProxyConnector
+from comic_web.workers.spiders.book_parser.BiqudaoParser import BiqudaoParser
+from comic_web.workers.spiders.tools.utils import retry
+from comic_web.workers.spiders.tools.aiohttp_proxy_connector import ProxyConnector
 logger = base_logger.getLogger(__name__)
 
 
