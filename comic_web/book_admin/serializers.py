@@ -1,5 +1,4 @@
 import os
-import copy
 from rest_framework import serializers
 from comic_admin import models as ComicAdminModels
 from comic_admin import serializers as ComicAdminSerializers
@@ -27,7 +26,7 @@ class ChapterDetailSerializer(serializers.ModelSerializer):
         model = BookAdminModels.Chapter
         fields = ("id", "book_id", "title", "number", "order", "active", "create_at",
                   "origin_addr", "relate_chapter_id", "content", "book_title")
-    
+
     def get_book_title(self, obj):
         book_obj = BookAdminModels.Book.normal.filter(id=obj.book_id).first()
         return book_obj.title
@@ -92,4 +91,5 @@ class SpydersUtilsSerializer(serializers.Serializer):
             subprocess.Popen(['python', manage_path, task_type, "-u", url])
 
         # run_subprocess("https://manhua.dmzj.com/zuixihuanderenwangjidaiyanjle/")
-        run_subprocess("https://www.biqudao.com/bqge91054/")
+        run_subprocess("https://www.biqugex.com/book_31777/")
+        # run_subprocess("https://www.biqudao.com/bqge91054/")
