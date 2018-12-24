@@ -152,14 +152,27 @@ class Scheduler(object):
         pass
 
     def update_chapter_db(self, chapter_url, name, chapter_id=0, book_id=0, count=0):
+        async def download_chapter_with_db(chapter_url, name, chapter_id=0, book_id=0, count=0):
+            with (await self.sema):
+                logger.info('Start download: %s', self._generate_download_info(
+                    name, "this is chapter update"))
 
-        async with self.aiohttp_session.get(chapter_url, verify_ssl=self.verify_ssl) as resp:
-            resp_data = await resp.content.read()
-            chapter_content = await self.parser.parse_chapter_content(resp_data)
-            if chapter_id:
-                Chapter.normal.filter(id=chapter_id).update(content=chapter_content)
-            else:
-                Chapter.normal.filter(book_id=book_id, title=name).update(content=chapter_content, origin_addr=chapter_url)
+                if self.fetch_only:
+                    logger.warning('Fetch only mode is on, all downloading process will not run')
+                    return
+
+                async with self.aiohttp_session.get(chapter_url, verify_ssl=self.verify_ssl) as resp:
+                    logger.info('chapter url: {}'.format(chapter_url))
+                    resp_data = await resp.content.read()
+                    logger.info('chapter content: {}'.format(resp_data))
+                    chapter_content = await self.parser.parse_chapter_content(resp_data)
+                    if chapter_id:
+                        Chapter.normal.filter(id=chapter_id).update(content=chapter_content)
+                    else:
+                        Chapter.normal.filter(book_id=book_id, title=name).update(content=chapter_content, origin_addr=chapter_url)
+        
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(asyncio.gather(download_chapter_with_db(self.url, name, chapter_id, book_id)))
 
     def _start_save_db(self, chapter_list, info):
 
