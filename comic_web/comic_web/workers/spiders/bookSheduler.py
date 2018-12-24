@@ -19,7 +19,7 @@ class Scheduler(object):
 
     def __init__(self, url, output_path='.', max_connection_num=10, max_retry_num=5,
                  proxy=None, header=None, save_manifest_file=False, parser=BiqudaoParser(),
-                 fetch_only=False, verify_ssl=True):
+                 fetch_only=False, verify_ssl=False):
 
         # usable config:
         # name: Scheduler instance name
@@ -93,8 +93,10 @@ class Scheduler(object):
         async def fetch(url):
             async with self.aiohttp_session.get(url, verify_ssl=self.verify_ssl) as resp:
                 nonlocal info
+                logger.info('Fetching target information start, url is: {}'.format(url))
                 ret_data = await resp.text()
                 info = await self.parser.parse_info(ret_data)
+                logger.info('Fetching target information end, info is : {}'.format(info))
 
         loop = asyncio.get_event_loop()
         loop.run_until_complete(asyncio.gather(fetch(base_url)))
@@ -127,7 +129,7 @@ class Scheduler(object):
         loop = asyncio.get_event_loop()
         loop.run_until_complete(asyncio.gather(fetch(base_url, loop)))
 
-        return chapter_list
+        return chapter_list[:5]
 
     def _generate_download_info(self, name, path):
         return name + ' => ' + path
@@ -149,11 +151,21 @@ class Scheduler(object):
     def _call_parser_hook(self, hook_name):
         pass
 
+    def update_chapter_db(self, chapter_url, name, chapter_id=0, book_id=0, count=0):
+
+        async with self.aiohttp_session.get(chapter_url, verify_ssl=self.verify_ssl) as resp:
+            resp_data = await resp.content.read()
+            chapter_content = await self.parser.parse_chapter_content(resp_data)
+            if chapter_id:
+                Chapter.normal.filter(id=chapter_id).update(content=chapter_content)
+            else:
+                Chapter.normal.filter(book_id=book_id, title=name).update(content=chapter_content, origin_addr=chapter_url)
+
     def _start_save_db(self, chapter_list, info):
 
         async def download_image_with_db(image_url, name, book_id=0, image_type="chapter_content"):
             with (await self.sema):
-                logger.info('Start download images: %s', self._generate_download_info(name, "default save path"))
+                logger.info('Start download images: %s', self._generate_download_info(name, "default save path aaaa"))
 
                 if self.fetch_only:
                     logger.warning('Fetch only mode is on, all downloading process will not run')
@@ -177,14 +189,16 @@ class Scheduler(object):
 
         async def download_chapter_with_db(chapter_url, name, chapter_id=0, book_id=0, count=0):
             with (await self.sema):
-                logger.info('Start download: %s', self._generate_download_info(name, "default save path"))
+                logger.info('Start download: %s', self._generate_download_info(name, "this is chapter"))
 
                 if self.fetch_only:
                     logger.warning('Fetch only mode is on, all downloading process will not run')
                     return
 
                 async with self.aiohttp_session.get(chapter_url, verify_ssl=self.verify_ssl) as resp:
+                    logger.info('chapter url: {}'.format(chapter_url))
                     resp_data = await resp.content.read()
+                    logger.info('chapter content: {}'.format(resp_data))
                     chapter_content = await self.parser.parse_chapter_content(resp_data)
                     Chapter.normal.filter(book_id=book_id, title=name).update(content=chapter_content)
 
@@ -251,3 +265,8 @@ class Scheduler(object):
                 chapter_obj_list = []
 
         Chapter.normal.bulk_create(chapter_obj_list)
+
+    def run_chapter(self, name, chapter_id=0, book_id=0):
+        logger.info('Using parser %s ..', type(self.parser).__name__)
+        logger.info('Fetch Chapter information')
+        self.update_chapter_db(self.url, name, chapter_id, book_id)

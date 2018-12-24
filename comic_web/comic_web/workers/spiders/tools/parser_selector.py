@@ -8,6 +8,7 @@ comic_regular = {
 
 book_regular = {
     "biqudao.com": "BiqudaoParser",
+    "biqugex.com": "BiqugexParser",
 }
 
 regular.update(comic_regular)
@@ -19,9 +20,9 @@ def get_parser(url):
         if re.search(k, url):
             if k in comic_regular:
                 module = __import__(
-                    'workers.comic_spiders.parser.' + v, fromlist=[v])
+                    'comic_web.workers.spiders.comic_parser.' + v, fromlist=[v])
             elif k in book_regular:
                 module = __import__(
-                    'workers.book_spiders.parser.' + v, fromlist=[v])
+                    'comic_web.workers.spiders.book_parser.' + v, fromlist=[v])
 
             return getattr(module, v)()

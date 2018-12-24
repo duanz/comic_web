@@ -1,10 +1,10 @@
-from workers.book_spiders.parser.BaseParser import BaseParser
+from comic_web.workers.spiders.book_parser.BaseParser import BaseParser
 from pyquery import PyQuery as pq
 
 
-class BiqudaoParser(BaseParser):
-    image_base_url = 'https://www.biqudao.com'
-    page_base_url = 'https://www.biqudao.com'
+class BiqugexParser(BaseParser):
+    image_base_url = 'https://www.biqugex.com'
+    page_base_url = 'https://www.biqugex.com'
     filename_extension = 'jpg'
     request_header = {
         # 'Accept': 'text/html,application/xhtml+xm…plication/xml;q=0.9,*/*;q=0.8',
@@ -23,13 +23,13 @@ class BiqudaoParser(BaseParser):
 
     async def parse_info(self, data):
         doc = pq(data)
-        book_name = doc('#info h1').text()
-        book_desc = doc('#intro').text()
-        latest_chapter_str = doc('#info a').text()
-        # 选取<td>里第1个 a 元素中的文本块
-        author_name = doc('#info p').eq(0).text()
-        markeup = ""
-        cover = doc("#fmimg img").attr('src')
+        book_name = doc('meta[property="og:title"]').attr('content')
+        book_desc = doc('meta[property="og:description"]').attr('content')
+        latest_chapter_str = doc('meta[property="og:novel:latest_chapter_name"]').attr('content')
+        # 选取<td>里第1个 a 元素中的文本块og:novel:category
+        author_name = doc('meta[property="og:novel:author"]').attr('content')
+        markeup = doc('meta[property="og:novel:category"]').attr('content')
+        cover = doc('meta[property="og:image"]').attr('content')
 
         info = {
             'name': book_name,
@@ -37,16 +37,15 @@ class BiqudaoParser(BaseParser):
             'desc': book_desc,
             'author_name': author_name,
             'markeup': markeup,
-            'cover': self.page_base_url + cover
+            'cover': cover
         }
-        print("{} info is >>>: {}".format(book_name, info))
         return info
 
     async def parse_chapter(self, data):
         doc = pq(data)
         url_list = {}
 
-        for u in doc('#list a'):
+        for u in doc('.listmain a')[6:10]:
             url_list.setdefault(
                 pq(u).text(), self.page_base_url + pq(u).attr('href'))
 

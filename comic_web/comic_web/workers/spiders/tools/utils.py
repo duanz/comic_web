@@ -1,7 +1,6 @@
 import re
 import os
-import traceback
-from workers.comic_spiders import config, title
+from comic_web.workers.spiders.tools import config
 
 
 def decode_packed_codes(code):
@@ -52,25 +51,11 @@ def generate_aiohttp_session_config(**kwargs):
     return params
 
 
-def update_window_title(mode=None, msg=None):
-    app_name = 'workers.comic_spiders'
-
-    window_title = app_name
-
-    if not mode == None:
-        window_title = window_title + ': %s' % mode
-
-    if not msg == None:
-        window_title = window_title + ' - %s' % msg
-
-    title.update(window_title)
-
-
 def mkdir(path):
     path_ = path.split('/')
 
     for i in range(0, len(path_)):
-        p = '/'.join(path_[0:i+1])
+        p = '/'.join(path_[0: i + 1])
         if p and not os.path.exists(p):
             os.mkdir(p)
 
@@ -84,7 +69,7 @@ def retry(max_num=5, on_retry=None, on_fail=None, on_fail_exit=False):
             try:
                 return await func(*args, **kwargs)
             except Exception as err:
-                if not on_retry == None:
+                if on_retry:
                     # traceback.print_exc()
                     on_retry(err=err, args=[args, kwargs],
                              retry_num=max_num - remaining_num)
@@ -93,7 +78,7 @@ def retry(max_num=5, on_retry=None, on_fail=None, on_fail_exit=False):
                     remaining_num -= 1
                     return await _retry(*args, **kwargs)
                 else:
-                    if not on_fail == None:
+                    if on_fail:
                         on_fail(err=err, args=[args, kwargs],
                                 retry_num=max_num - remaining_num)
                         remaining_num = max_num
