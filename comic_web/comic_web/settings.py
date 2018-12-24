@@ -46,7 +46,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django_crontab',
     'comic_admin',
     'book_admin',
     'members',
@@ -153,12 +152,6 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 AUTH_USER_MODEL = 'auth.User'
-
-# 定时任务
-CRONJOBS = [
-    # 表示每分钟执行一次
-    ('*/1 * * * *', 'comic_web.workers.spiders.work.task', '>>/home/duan/mall_web_upload/name.log')
-]
 
 # 默认分页数量
 PAGINATE_BY = 30
