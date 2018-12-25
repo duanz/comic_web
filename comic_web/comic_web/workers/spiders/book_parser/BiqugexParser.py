@@ -55,3 +55,38 @@ class BiqugexParser(BaseParser):
         doc = pq(data)
         content = doc("#content").text()
         return content
+
+    def new_parse_info(self, data):
+        doc = pq(data)
+        book_name = doc('meta[property="og:title"]').attr('content')
+        book_desc = doc('meta[property="og:description"]').attr('content')
+        latest_chapter_str = doc('meta[property="og:novel:latest_chapter_name"]').attr('content')
+        # 选取<td>里第1个 a 元素中的文本块og:novel:category
+        author_name = doc('meta[property="og:novel:author"]').attr('content')
+        markeup = doc('meta[property="og:novel:category"]').attr('content')
+        cover = doc('meta[property="og:image"]').attr('content')
+
+        info = {
+            'name': book_name,
+            'latest_chapter': latest_chapter_str,
+            'desc': book_desc,
+            'author_name': author_name,
+            'markeup': markeup,
+            'cover': cover
+        }
+        return info
+
+    def new_parse_chapter(self, data):
+        doc = pq(data)
+        url_list = {}
+
+        for u in doc('.listmain a')[6:]:
+            url_list.setdefault(
+                pq(u).text(), self.page_base_url + pq(u).attr('href'))
+
+        return (url_list, )
+
+    def new_parse_chapter_content(self, data):
+        doc = pq(data)
+        content = doc("#content").text()
+        return content

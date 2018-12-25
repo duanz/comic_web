@@ -1,15 +1,15 @@
-import time
-import logging
-import schedule
-from django.core.management.base import BaseCommand
-
 from comic_web.utils import time_lib
-from comic_web.workers.spiders.work import task
-# from mall_web.workers.order import close_overtime_new_order, finish_overtime_shipped_order
+from comic_web.workers.spiders.work import task, newTask
+import schedule
+import time
+from django.core.management.base import BaseCommand
+import logging
+
 
 FORMAT = '%(asctime)s - %(message)s'
 logging.basicConfig(format=FORMAT)
 logging.getLogger().setLevel('INFO'.upper())
+
 
 SECOND = 1
 MINUTE = SECOND * 60
@@ -39,15 +39,13 @@ class Command(BaseCommand):
     help = 'Load initial data for new project.'
 
     def handle(self, *args, **options):
-
         """RUN TASK LOOP"""
 
         # 每日任务(凌晨执行)
         def _day_work():
-            pass
-            # log_task_run('DAILY_BACKUP')
-            # # task()
-            # log_task_run('DAILY_BACKUP', is_end=True)
+            log_task_run('DAILY_TASK')
+            # task()
+            log_task_run('DAILY_TASK', is_end=True)
 
         # 每小时任务
         def _hour_work():
@@ -55,9 +53,10 @@ class Command(BaseCommand):
 
         # 每分钟任务(不放置耗时任务)
         def _minute_work():
-            log_task_run('PER_MINUTE_TASK START')
-            task()
-            log_task_run('PER_MINUTE_TASK END', is_end=True)
+            log_task_run('DAILY_TASK')
+            # task()
+            newTask()
+            log_task_run('DAILY_TASK', is_end=True)
 
         # 设置每日任务的执行小时(范围 0~23) 3表示凌晨3点,
         run_hour_in_24 = 3
