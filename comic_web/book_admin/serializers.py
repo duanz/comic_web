@@ -76,7 +76,7 @@ class BookDetailSerializer(serializers.ModelSerializer):
         read_only_fields = ("chapter", "cover")
 
     def get_chapter(self, obj):
-        chapters = BookAdminModels.Chapter.normal.filter(book_id=obj.id)
+        chapters = BookAdminModels.Chapter.normal.filter(book_id=obj.id)[:200]
         return ChapterSerializer(chapters, many=True).data
 
     def get_cover(self, obj):
