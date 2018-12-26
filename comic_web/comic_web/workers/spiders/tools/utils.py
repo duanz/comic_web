@@ -1,6 +1,5 @@
 import re
 import os
-from comic_web.workers.spiders.tools import config
 
 
 def decode_packed_codes(code):
@@ -40,17 +39,6 @@ def decode_packed_codes(code):
         obfucasted_code)
 
 
-def generate_aiohttp_session_config(**kwargs):
-    params = {
-        'timeout': 50,
-        'verify_ssl': config.get('debug_mode'),
-        'proxy': config.get('proxy')
-    }
-    params.update(kwargs)
-
-    return params
-
-
 def mkdir(path):
     path_ = path.split('/')
 
@@ -58,33 +46,3 @@ def mkdir(path):
         p = '/'.join(path_[0: i + 1])
         if p and not os.path.exists(p):
             os.mkdir(p)
-
-
-def retry(max_num=5, on_retry=None, on_fail=None, on_fail_exit=False):
-    remaining_num = max_num
-
-    def decorate(func):
-        async def _retry(*args, **kwargs):
-            nonlocal max_num, remaining_num
-            try:
-                return await func(*args, **kwargs)
-            except Exception as err:
-                if on_retry:
-                    # traceback.print_exc()
-                    on_retry(err=err, args=[args, kwargs],
-                             retry_num=max_num - remaining_num)
-
-                if remaining_num > 1:
-                    remaining_num -= 1
-                    return await _retry(*args, **kwargs)
-                else:
-                    if on_fail:
-                        on_fail(err=err, args=[args, kwargs],
-                                retry_num=max_num - remaining_num)
-                        remaining_num = max_num
-                        if on_fail_exit is True:
-                            exit()
-
-        return _retry
-
-    return decorate

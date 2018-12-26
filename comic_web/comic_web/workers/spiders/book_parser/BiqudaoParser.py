@@ -21,7 +21,7 @@ class BiqudaoParser(BaseParser):
         'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.167 Safari/537.36'
     }
 
-    async def parse_info(self, data):
+    def parse_info(self, data):
         doc = pq(data)
         book_name = doc('#info h1').text()
         book_desc = doc('#intro').text()
@@ -41,7 +41,7 @@ class BiqudaoParser(BaseParser):
         }
         return info
 
-    async def parse_chapter(self, data):
+    def parse_chapter(self, data):
         doc = pq(data)
         url_list = {}
 
@@ -51,7 +51,13 @@ class BiqudaoParser(BaseParser):
 
         return (url_list, )
 
-    async def parse_chapter_content(self, data):
+    def parse_chapter_content(self, data):
         doc = pq(data)
         content = doc("#content").text()
         return content
+
+    def parse_chapter_singal(self, data):
+        doc = pq(data)
+        title = doc(".bookname h1").text()
+        content = doc("#content").text()
+        return {"title": title, "content": content}

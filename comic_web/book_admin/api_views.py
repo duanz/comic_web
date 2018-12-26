@@ -52,7 +52,7 @@ class BookDetailApiView(mixins.RetrieveModelMixin, BaseGenericAPIView):
 
 class BookChapterDetailApiView(mixins.RetrieveModelMixin, BaseGenericAPIView):
     """
-    get: 反馈信息详情；
+    get: 反馈信息详情；BookChanpterListApiView
     """
     queryset = BookAdminModels.Chapter.normal.filter(active=True)
     serializer_class = BookAdminSerializers.ChapterDetailSerializer
@@ -60,6 +60,25 @@ class BookChapterDetailApiView(mixins.RetrieveModelMixin, BaseGenericAPIView):
 
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
+
+
+class BookChanpterListApiView(mixins.ListModelMixin, BaseGenericAPIView):
+    """
+    get: 获取小说章节列表；
+    """
+    queryset = BookAdminModels.Chapter.normal.filter(active=True)
+    serializer_class = BookAdminSerializers.ChapterSerializer
+
+    filter_backends = (rest_framework.DjangoFilterBackend, )
+    filter_class = BookAdminFilters.ChapterListFilter
+
+    permission_classes = (AllowAny, )
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
+    def get_queryset(self):
+        return self.queryset.filter(book_id=self.kwargs['pk'])
 
 
 class SpyderUtilsApiView(BaseApiView):

@@ -15,7 +15,7 @@ class DmzjParser(BaseParser):
         'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.167 Safari/537.36'
     }
 
-    async def parse_info(self, data):
+    def parse_info(self, data):
         doc = pq(data)
         comic_name = doc('.anim_title_text h1').text()
         comic_desc = doc('div.line_height_content').text()
@@ -34,20 +34,18 @@ class DmzjParser(BaseParser):
             'markeup': markeup,
             'cover': cover
         }
-        print("{} info is >>>: {}".format(comic_name, info))
         return info
 
-    async def parse_chapter(self, data):
+    def parse_chapter(self, data):
         doc = pq(data)
         url_list = {}
-        # d = doc('.cartoon_online_border ul li a')
 
         for u in doc('.cartoon_online_border ul li a'):
             url_list.setdefault(pq(u).text(), self.page_base_url + pq(u).attr('href'))
-        
+
         return (url_list, )
-    
-    async def parse_image_list(self, data):
+
+    def parse_image_list(self, data):
         jspacker_string = re.search(r'(eval\(.+\))', data).group()
         jspacker_string = utils.decode_packed_codes(jspacker_string)
 

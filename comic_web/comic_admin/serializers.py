@@ -35,7 +35,7 @@ class ImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ComicAdminModels.Image
         fields = ('__all__')
-    
+
     def get_url(self, obj):
         quality = self.context.get('quality', "")
         if quality == "thumb":
@@ -63,16 +63,16 @@ class ChapterDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ComicAdminModels.Chapter
-        fields = ("id", "comic_id", "title", "number", "order", "active", "create_at", 
+        fields = ("id", "comic_id", "title", "number", "order", "active", "create_at",
                   "origin_addr", "image_url_list", "relate_chapter_id", "comic_title")
-    
+
     def get_comic_title(self, obj):
         comic_obj = ComicAdminModels.Comic.normal.filter(id=obj.comic_id).first()
         return comic_obj.title
 
     def get_image_url_list(self, obj):
         return CommonImageSerializer.to_representation(chapter_id=obj.id, quality="title", only_url=True)
-    
+
     def get_relate_chapter_id(self, obj):
         query_set = ComicAdminModels.Chapter.normal.filter(comic_id=obj.comic_id).values("id")
         id_list = [item['id'] for item in query_set] if query_set else []
@@ -107,7 +107,7 @@ class CommonImageSerializer(serializers.ModelSerializer):
             queryset = ComicAdminModels.CoverImage.normal.filter(comic_id__in=comic_id_list, active=True).values("image_id")
         elif img_type == "book_cover":
             queryset = ComicAdminModels.CoverImage.normal.filter(book_id__in=book_id_list, active=True).values("image_id")
-        
+
         # 仅仅用在测试
         queryset = [{"image_id": 137}] if not queryset else queryset
 
@@ -128,7 +128,7 @@ class ComicSerializer(serializers.ModelSerializer):
     create_at = serializers.DateTimeField(
         format="%Y-%m-%d %H:%I:%S", required=False)
     cover = serializers.SerializerMethodField()
-        
+
     class Meta:
         model = ComicAdminModels.Comic
         fields = ("id", "create_at", "status", "update_at", "title",
@@ -158,7 +158,7 @@ class ComicDetailSerializer(serializers.ModelSerializer):
     def get_chapter(self, obj):
         chapters = ComicAdminModels.Chapter.normal.filter(comic_id=obj.id)
         return ChapterSerializer(chapters, many=True).data
-    
+
     def get_cover(self, obj):
         return CommonImageSerializer.to_representation(comic_id=obj.id, img_type="comic_cover", quality="title", only_url=False)
 
@@ -172,7 +172,15 @@ class SpydersUtilsSerializer(serializers.Serializer):
 
         # run_subprocess("https://manhua.dmzj.com/zuixihuanderenwangjidaiyanjle/")
         run_subprocess("https://manhua.dmzj.com/nogunslife/")
-        
+
+
+class IndexBlockSerializer(serializers.ModelSerializer):
+    create_at = serializers.DateTimeField(format="%Y-%m-%d %H:%I:%S", required=False)
+
+    class Meta:
+        model = ComicAdminModels.IndexBlock
+        fields = ('__all__')
+
 
 class DefaultIndexSerializer(serializers.Serializer):
 
@@ -196,7 +204,7 @@ class DefaultIndexSerializer(serializers.Serializer):
                     item['url'] = item.get('cover')[0] if item.get('cover') else ""
                     res.append(item)
         return res
-    
+
     def get_index_left(self, content_id, comic_list):
         for item in comic_list:
             if item.get('id') == content_id:
@@ -204,7 +212,7 @@ class DefaultIndexSerializer(serializers.Serializer):
                 temp['url'] = item.get('cover')[0] if item.get('cover') else ""
                 temp['desc_type'] = ComicAdminModels.INDEX_BLOCK_DESC.Photo_Left
                 return temp
-    
+
     def get_index_top(self, content_id, comic_list):
         for item in comic_list:
             if item.get('id') == content_id:
@@ -228,12 +236,12 @@ class DefaultIndexSerializer(serializers.Serializer):
                 temp_data = {'block_type': 'photo_left', 'results': self.get_index_left(item.content_id, comic_list)}
             elif item.desc_type == ComicAdminModels.INDEX_BLOCK_DESC.Photo_Top:
                 temp_data = {'block_type': 'photo_top', 'results': self.get_index_top(item.content_id, comic_list)}
-            
+
             if temp_data:
                 data.append(temp_data)
 
         return data
-    
+
     def book_index_block(self):
         queryset = ComicAdminModels.IndexBlock.normal.filter(block_type=ComicAdminModels.INDEX_BLOCK_TYPE_DESC.Book)
 
@@ -250,7 +258,7 @@ class DefaultIndexSerializer(serializers.Serializer):
                 temp_data = {'block_type': 'photo_left', 'results': self.get_index_left(item.content_id, book_list)}
             elif item.desc_type == ComicAdminModels.INDEX_BLOCK_DESC.Photo_Top:
                 temp_data = {'block_type': 'photo_top', 'results': self.get_index_top(item.content_id, book_list)}
-            
+
             if temp_data:
                 data.append(temp_data)
 

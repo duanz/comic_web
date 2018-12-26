@@ -21,7 +21,7 @@ class BiqugexParser(BaseParser):
         'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.167 Safari/537.36'
     }
 
-    async def parse_info(self, data):
+    def parse_info(self, data):
         doc = pq(data)
         book_name = doc('meta[property="og:title"]').attr('content')
         book_desc = doc('meta[property="og:description"]').attr('content')
@@ -41,42 +41,7 @@ class BiqugexParser(BaseParser):
         }
         return info
 
-    async def parse_chapter(self, data):
-        doc = pq(data)
-        url_list = {}
-
-        for u in doc('.listmain a')[6:10]:
-            url_list.setdefault(
-                pq(u).text(), self.page_base_url + pq(u).attr('href'))
-
-        return (url_list, )
-
-    async def parse_chapter_content(self, data):
-        doc = pq(data)
-        content = doc("#content").text()
-        return content
-
-    def new_parse_info(self, data):
-        doc = pq(data)
-        book_name = doc('meta[property="og:title"]').attr('content')
-        book_desc = doc('meta[property="og:description"]').attr('content')
-        latest_chapter_str = doc('meta[property="og:novel:latest_chapter_name"]').attr('content')
-        # 选取<td>里第1个 a 元素中的文本块og:novel:category
-        author_name = doc('meta[property="og:novel:author"]').attr('content')
-        markeup = doc('meta[property="og:novel:category"]').attr('content')
-        cover = doc('meta[property="og:image"]').attr('content')
-
-        info = {
-            'name': book_name,
-            'latest_chapter': latest_chapter_str,
-            'desc': book_desc,
-            'author_name': author_name,
-            'markeup': markeup,
-            'cover': cover
-        }
-        return info
-
-    def new_parse_chapter(self, data):
+    def parse_chapter(self, data):
         doc = pq(data)
         url_list = {}
 
@@ -86,7 +51,13 @@ class BiqugexParser(BaseParser):
 
         return (url_list, )
 
-    def new_parse_chapter_content(self, data):
+    def parse_chapter_content(self, data):
         doc = pq(data)
         content = doc("#content").text()
         return content
+
+    def parse_chapter_singal(self, data):
+        doc = pq(data)
+        title = doc(".content h1").text()
+        content = doc("#content").text()
+        return {"title": title, "content": content}

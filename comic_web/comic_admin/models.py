@@ -159,6 +159,7 @@ class CoverImage(BaseModel):
 
 class IndexBlock(BaseModel):
     '''首页模块表'''
+    active = models.BooleanField('生效', default=True)
     block_type = models.CharField("模块类型", null=False, max_length=10, default="COMIC", choices=BLOCK_TYPE_CHOICES)
     desc_type = models.CharField("模块类型", null=False, max_length=10, default="CA", choices=BLOCK_DESC_CHOICES)
     content_id = models.IntegerField("内容ID", null=False, default=0)

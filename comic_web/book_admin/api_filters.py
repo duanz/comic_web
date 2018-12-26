@@ -10,3 +10,15 @@ class BookListFilter(filters.FilterSet):
             'title': ['icontains'],
             'author': ['exact'],
         }
+
+
+class ChapterListFilter(filters.FilterSet):
+
+    class Meta:
+        model = BookAdminModels.Chapter
+        fields = {
+            'active': ['exact'],
+            'number': ['exact'],
+            'title': ['icontains'],
+            'origin_addr': ['icontains'],
+        }

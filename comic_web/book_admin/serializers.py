@@ -8,12 +8,12 @@ from django.conf import settings
 
 
 class ChapterSerializer(serializers.ModelSerializer):
-    create_at = serializers.DateTimeField(
+    update_at = serializers.DateTimeField(
         format="%Y-%m-%d %H:%I:%S", required=False)
 
     class Meta:
         model = BookAdminModels.Chapter
-        fields = ("id", "book_id", "title", "number", "order", "create_at", )
+        fields = ("id", "book_id", "title", "number", "order", "update_at", "origin_addr")
 
 
 class ChapterDetailSerializer(serializers.ModelSerializer):

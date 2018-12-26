@@ -1,5 +1,5 @@
 from comic_web.utils import time_lib
-from comic_web.workers.spiders.work import task, newTask
+from comic_web.workers.spiders.work import task
 import schedule
 import time
 from django.core.management.base import BaseCommand
@@ -44,7 +44,7 @@ class Command(BaseCommand):
         # 每日任务(凌晨执行)
         def _day_work():
             log_task_run('DAILY_TASK')
-            # task()
+            task()
             log_task_run('DAILY_TASK', is_end=True)
 
         # 每小时任务
@@ -54,8 +54,7 @@ class Command(BaseCommand):
         # 每分钟任务(不放置耗时任务)
         def _minute_work():
             log_task_run('DAILY_TASK')
-            # task()
-            newTask()
+            task()
             log_task_run('DAILY_TASK', is_end=True)
 
         # 设置每日任务的执行小时(范围 0~23) 3表示凌晨3点,

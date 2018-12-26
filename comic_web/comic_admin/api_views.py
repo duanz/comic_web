@@ -76,6 +76,36 @@ class ComicChapterDetailApiView(mixins.RetrieveModelMixin, BaseGenericAPIView):
         return self.retrieve(request, *args, **kwargs)
 
 
+class IndexBlockApiView(mixins.CreateModelMixin, mixins.ListModelMixin, BaseGenericAPIView):
+    """
+    get: 反馈信息详情；
+    """
+    queryset = ComicAdminModels.IndexBlock.normal.all()
+    serializer_class = ComicAdminSerializers.IndexBlockSerializer
+    permission_classes = (AllowAny, )
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
+
+
+class IndexBlockDetailApiView(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, BaseGenericAPIView):
+    """
+    get: 反馈信息详情；
+    """
+    queryset = ComicAdminModels.IndexBlock.normal.all()
+    serializer_class = ComicAdminSerializers.IndexBlockSerializer
+    permission_classes = (AllowAny, )
+
+    def get(self, request, *args, **kwargs):
+        return self.retrieve(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
+
+
 class SpyderUtilsApiView(BaseApiView):
     "get: 下发爬虫任务"
     permission_classes = (AllowAny, )
