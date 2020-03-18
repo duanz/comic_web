@@ -5,7 +5,7 @@ from rest_framework import serializers
 # from django.conf import settings
 # from comic_web.utils import photo as photo_lib
 from members import models as MemberModels
-
+from .tasks import handle_book_and_comic_spider_tasks
 
 class TaskSerializer(serializers.ModelSerializer):
     create_at = serializers.DateTimeField(
@@ -14,6 +14,14 @@ class TaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = MemberModels.Task
         fields = "__all__"
+    
+    def create(self, validated_data):
+        handle_book_and_comic_spider_tasks.delay()
+        return super().create(validated_data)
+    
+    def update(self, instance, validated_data):
+        handle_book_and_comic_spider_tasks.delay()
+        return super().update(instance, validated_data)
 
 
 class ViewHistorySerializer(serializers.ModelSerializer):

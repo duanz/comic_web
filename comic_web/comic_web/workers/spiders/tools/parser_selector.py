@@ -3,12 +3,14 @@ regular = {}
 
 comic_regular = {
     'manhua.dmzj.com': 'DmzjParser',
+    'dmzj.com': 'ComDmzjParser',
     'e-hentai.org': 'EhentaiParser'
 }
 
 book_regular = {
     "biqudao.com": "BiqudaoParser",
     "biqugex.com": "BiqugexParser",
+    "biquge.tv": "BiqugexParser"
 }
 
 regular.update(comic_regular)

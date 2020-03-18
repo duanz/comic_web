@@ -36,13 +36,13 @@ class TaskDetailApiView(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, Base
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):        
         return self.update(request, *args, **kwargs)
 
 
 class ViewHistoryApiView(mixins.ListModelMixin, mixins.CreateModelMixin, BaseGenericAPIView):
     """
-    get: 反馈信息详情；
+    get: 获取浏览历史；
     """
     queryset = MemberModels.MemberViewHistory.normal.filter()
     serializer_class = MemberSerializers.ViewHistorySerializer

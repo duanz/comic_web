@@ -31,6 +31,7 @@ class ImageSerializer(serializers.ModelSerializer):
     create_at = serializers.DateTimeField(
         format="%Y-%m-%d %H:%I:%S", required=False)
     url = serializers.SerializerMethodField()
+    path = serializers.SerializerMethodField()
 
     class Meta:
         model = ComicAdminModels.Image
@@ -42,6 +43,14 @@ class ImageSerializer(serializers.ModelSerializer):
             url = photo_lib.get_thumb_img_url(obj)
         elif quality == "title":
             url = photo_lib.get_title_img_url(obj)
+        return url
+
+    def get_path(self, obj):
+        quality = self.context.get('quality', "")
+        if quality == "thumb":
+            url = photo_lib.build_photo_path(obj.key, pic_type="thumb")
+        elif quality == "title":
+            url = photo_lib.build_photo_path(obj.key, pic_type="title")
         return url
 
 
@@ -78,11 +87,16 @@ class ChapterDetailSerializer(serializers.ModelSerializer):
         id_list = [item['id'] for item in query_set] if query_set else []
         index = id_list.index(obj.id)
         if index == 0:
-            return {"pre_id": 0, "next_id": id_list[1]}
+            next_id = id_list[1] if len(id_list) >=2 else id_list[0]
+            pre_id = id_list[0]
         elif index == len(id_list) - 1:
-            return {"pre_id": id_list[index - 1], "next_id": 0}
+            next_id = id_list[0]
+            pre_id = id_list[index - 1]
         else:
-            return {"pre_id": id_list[index - 1], "next_id": id_list[index + 1]}
+            next_id = id_list[index + 1]
+            pre_id = id_list[index - 1]
+
+        return {"pre_id": pre_id, "next_id": next_id}
 
 
 class CommonImageSerializer(serializers.ModelSerializer):
@@ -91,7 +105,7 @@ class CommonImageSerializer(serializers.ModelSerializer):
         model = ComicAdminModels.Image
         fields = ('__all__')
 
-    def to_representation(comic_id=None, book_id=None, chapter_id=None, img_type="chapter_content", quality="thumb", only_url=True):
+    def to_representation(comic_id=None, book_id=None, chapter_id=None, img_type="chapter_content", quality="thumb", only_url=True, only_path=False):
         if comic_id:
             comic_id_list = comic_id if isinstance(comic_id, list) else [comic_id]
         elif book_id:
@@ -108,18 +122,17 @@ class CommonImageSerializer(serializers.ModelSerializer):
         elif img_type == "book_cover":
             queryset = ComicAdminModels.CoverImage.normal.filter(book_id__in=book_id_list, active=True).values("image_id")
 
-        # 仅仅用在测试
-        queryset = [{"image_id": 137}] if not queryset else queryset
-
+        image_set = ComicAdminModels.Image.normal.filter(pk__in=[item.get("image_id") for item in queryset] if queryset else [])
+        img_set = image_set.values('key')
         if only_url:
-            img_set = ComicAdminModels.Image.normal.filter(pk__in=[item.get("image_id") for item in queryset] if queryset else []).values('key')
             if quality == "thumb":
                 img_url_list = [photo_lib.get_thumb_img_url(item) for item in img_set] if img_set else []
             elif quality == "title":
                 img_url_list = [photo_lib.get_title_img_url(item) for item in img_set] if img_set else []
             return img_url_list
+        elif only_path:
+            return [photo_lib.build_photo_path(item.get('key'), pic_type=quality) for item in img_set] if img_set else []
         else:
-            image_set = ComicAdminModels.Image.normal.filter(pk__in=[item.get("image_id") for item in queryset] if queryset else [])
             serializer = ImageSerializer(image_set, many=True, context={"quality": quality})
             return serializer.data
 

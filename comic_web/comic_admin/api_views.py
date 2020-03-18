@@ -19,7 +19,8 @@ class ComicIndexApiView(BaseApiView):
 
 class ComicCoverImageApiView(mixins.ListModelMixin, mixins.CreateModelMixin, BaseGenericAPIView):
     """
-    get: 反馈信息详情；
+    get: 获取漫画封面；
+    post: 创建漫画封面；
     """
     queryset = ComicAdminModels.CoverImage.normal.filter(active=True)
     serializer_class = ComicAdminSerializers.CoverImageSerializer
@@ -54,7 +55,7 @@ class ComicListApiView(mixins.ListModelMixin, BaseGenericAPIView):
 
 class ComicDetailApiView(mixins.RetrieveModelMixin, BaseGenericAPIView):
     """
-    get: 反馈信息详情；
+    get: 获取漫画详情；
     """
     queryset = ComicAdminModels.Comic.normal.filter(on_shelf=True)
     serializer_class = ComicAdminSerializers.ComicDetailSerializer
@@ -66,7 +67,7 @@ class ComicDetailApiView(mixins.RetrieveModelMixin, BaseGenericAPIView):
 
 class ComicChapterDetailApiView(mixins.RetrieveModelMixin, BaseGenericAPIView):
     """
-    get: 反馈信息详情；
+    get: 获取漫画章节详情；
     """
     queryset = ComicAdminModels.Chapter.normal.filter(active=True)
     serializer_class = ComicAdminSerializers.ChapterDetailSerializer
@@ -78,7 +79,8 @@ class ComicChapterDetailApiView(mixins.RetrieveModelMixin, BaseGenericAPIView):
 
 class IndexBlockApiView(mixins.CreateModelMixin, mixins.ListModelMixin, BaseGenericAPIView):
     """
-    get: 反馈信息详情；
+    get: 获取首页块；
+    post: 创建首页块；
     """
     queryset = ComicAdminModels.IndexBlock.normal.all()
     serializer_class = ComicAdminSerializers.IndexBlockSerializer
@@ -93,7 +95,8 @@ class IndexBlockApiView(mixins.CreateModelMixin, mixins.ListModelMixin, BaseGene
 
 class IndexBlockDetailApiView(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, BaseGenericAPIView):
     """
-    get: 反馈信息详情；
+    get: 获取首页块详情；
+    post: 更新首页块详情；
     """
     queryset = ComicAdminModels.IndexBlock.normal.all()
     serializer_class = ComicAdminSerializers.IndexBlockSerializer
@@ -107,7 +110,7 @@ class IndexBlockDetailApiView(mixins.RetrieveModelMixin, mixins.UpdateModelMixin
 
 
 class SpyderUtilsApiView(BaseApiView):
-    "get: 下发爬虫任务"
+    "get: 下发漫画爬虫任务"
     permission_classes = (AllowAny, )
 
     def get(self, request, *args, **kwargs):
@@ -120,12 +123,5 @@ class HistoryApiView(BaseApiView):
     permission_classes = (AllowAny, )
 
     def get(self, request, *args, **kwargs):
-        data = [
-            {'id': 1, 'data_type': 'book', 'title': '我不成仙',
-                'chapter_id': 50, 'content_id': 1, 'chapter_title': '第50章 要上天吗'},
-            {'id': 2, 'data_type': 'book', 'title': '我不成仙',
-                'chapter_id': 51, 'content_id': 1, 'chapter_title': '第60章 要上天'},
-            {'id': 3, 'data_type': 'comic', 'title': '这是漫画',
-                'chapter_id': 1, 'content_id': 2, 'chapter_title': '第1章 测ui'},
-        ]
+        data = "TODO"
         return Response(data)

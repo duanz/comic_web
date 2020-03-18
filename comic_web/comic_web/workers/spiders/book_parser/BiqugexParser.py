@@ -3,8 +3,8 @@ from pyquery import PyQuery as pq
 
 
 class BiqugexParser(BaseParser):
-    image_base_url = 'https://www.biqugex.com'
-    page_base_url = 'https://www.biqugex.com'
+    image_base_url = 'https://www.biquge.tv'
+    page_base_url = 'https://www.biquge.tv'
     filename_extension = 'jpg'
     request_header = {
         # 'Accept': 'text/html,application/xhtml+xm…plication/xml;q=0.9,*/*;q=0.8',

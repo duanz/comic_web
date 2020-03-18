@@ -1,15 +1,16 @@
+from __future__ import absolute_import, unicode_literals
+import logging
 from members import models as MemberModels
 from comic_web.workers.spiders.tools import parser_selector
 from comic_web.workers.spiders.bookSheduler import BookSheduler
 from comic_web.workers.spiders.bookSheduler import BookChapterSheduler
 from comic_web.workers.spiders.comicSheduler import ComicSheduler
 from comic_web.workers.spiders.comicSheduler import ComicChapterSheduler
-import logging
 
 
 FORMAT = '%(asctime)s - %(message)s'
 logging.basicConfig(format=FORMAT)
-logging.getLogger().setLevel('INFO'.upper())
+logging.getLogger().setLevel('info'.upper())
 
 
 def get_queryset():
@@ -22,6 +23,7 @@ def task():
     logging.info("获取任务列表成功：共{}条".format(queryset.count()))
     for task in queryset:
         task.task_status = MemberModels.TASK_STATUS_DESC.RUNNING
+        task.markup = ""
         task.save()
 
         if task.task_type in [MemberModels.TASK_TYPE_DESC.BOOK_INSERT, MemberModels.TASK_TYPE_DESC.BOOK_CHAPTER_UPDATE, MemberModels.TASK_TYPE_DESC.COMIC_INSERT, MemberModels.TASK_TYPE_DESC.COMIC_CHAPTER_UPDATE]:
@@ -60,11 +62,13 @@ def task():
                     parser=parser_selector.get_parser(content_dict['url'])
                 )
 
+            
             try:
-                s.run()
+                s.run() 
             except Exception as e:
-                logging.error("执行任务失败： {}".format(e))
-                task.markup = "执行任务失败： {}".format(e)
+                error_info = "执行任务失败： {}".format(e)
+                logging.error(error_info)
+                task.markup = error_info
                 task.task_status = MemberModels.TASK_STATUS_DESC.FAILD
                 task.save()
                 return
@@ -72,8 +76,12 @@ def task():
             task.task_status = MemberModels.TASK_STATUS_DESC.FINISH
             task.save()
             logging.error("执行任务结束")
+            return
 
         else:
             task.task_status = MemberModels.TASK_STATUS_DESC.FAILD
             task.markup = "任务未执行， {}不存在".format(task.task_type)
             task.save()
+            return
+
+

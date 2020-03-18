@@ -40,7 +40,7 @@ class BookListApiView(mixins.ListModelMixin, BaseGenericAPIView):
 
 class BookDetailApiView(mixins.RetrieveModelMixin, BaseGenericAPIView):
     """
-    get: 反馈信息详情；
+    get: 获取小说详情；
     """
     queryset = BookAdminModels.Book.normal.filter(on_shelf=True)
     serializer_class = BookAdminSerializers.BookDetailSerializer
@@ -52,7 +52,7 @@ class BookDetailApiView(mixins.RetrieveModelMixin, BaseGenericAPIView):
 
 class BookChapterDetailApiView(mixins.RetrieveModelMixin, BaseGenericAPIView):
     """
-    get: 反馈信息详情；BookChanpterListApiView
+    get: 获取小说章节详情
     """
     queryset = BookAdminModels.Chapter.normal.filter(active=True)
     serializer_class = BookAdminSerializers.ChapterDetailSerializer

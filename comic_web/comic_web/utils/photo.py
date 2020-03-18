@@ -206,6 +206,18 @@ def build_photo_url(photo_name, pic_type='photo', ext='jpg'):
     return settings.APP_HOST + os.path.join('/images', 'no_img.png')
 
 
+def build_photo_path(photo_name, pic_type='photo', ext='jpg'):
+    _img_exts = ('.jpg', '.png', '.gif')
+    if photo_name:
+        _base_path = os.path.join(settings.UPLOAD_SAVE_PATH, 'photos', pic_type, photo_name[:2])
+        if photo_name.endswith(_img_exts):
+            return os.path.join(_base_path, photo_name)
+        if '.' in ext:
+            ext = ext.rsplit('.', 1)[-1]
+        return os.path.join(_base_path, '{}.{}'.format(photo_name, ext))
+    return os.path.join('/images', 'no_img.png')
+
+
 def get_img_url_by_obj(img_obj, pic_type='photo', ext='jpg'):
     if not img_obj:
         return ''

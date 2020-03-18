@@ -58,3 +58,8 @@ target/
 
 mall_web_upload/
 comic_web/comic_web/settings_local.py
+comic_web/.vscode/launch.json
+comic_web/.vscode/settings.json
+comic_web/.vscode/tasks.json
+comic_web/celerybeat-schedule
+comic_web/celerybeat.pid
