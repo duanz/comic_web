@@ -17,6 +17,7 @@ class DmzjParser(BaseParser):
 
     def parse_info(self, data):
         doc = pq(data)
+        '.comic_deCon > h1:nth-child(1) > a:nth-child(1)'
         comic_name = doc('.anim_title_text h1').text()
         comic_desc = doc('div.line_height_content').text()
         latest_chapter_str = doc('#newest_chapter').text()

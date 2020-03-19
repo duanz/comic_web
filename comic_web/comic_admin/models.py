@@ -1,5 +1,5 @@
 # import datetime
-from djongo import models
+from django.db import models
 
 from comic_web.utils.base_model import BaseModel
 
@@ -65,11 +65,11 @@ class Author(BaseModel):
 class Image(BaseModel):
     """图片"""
     img_type = models.CharField(
-        '图片类型', null=True, max_length=2, default='', choices=IMAGE_TYPE)
+        '图片类型', null=True, max_length=30, default='', choices=IMAGE_TYPE)
     order = models.IntegerField('排序位置', default=0)
     active = models.BooleanField('生效', default=True)
     name = models.CharField('名称', max_length=255, default='')
-    key = models.CharField("图片ID KEY", max_length=30, default="")
+    key = models.CharField("图片ID KEY", max_length=50, default="")
 
     def __str__(self):
         return self.name

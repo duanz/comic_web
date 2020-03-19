@@ -1,5 +1,5 @@
 # import datetime
-from djongo import models
+from django.db import models
 from comic_admin.models import Author
 
 from comic_web.utils.base_model import BaseModel

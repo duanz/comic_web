@@ -1,0 +1,13 @@
+FROM python:3.6
+RUN mkdir -p /usr/data/app
+WORKDIR /usr/data/app
+COPY pip.conf /root/.pip/pip.conf
+COPY requirements.txt /usr/data/app
+COPY . /usr/src/app
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories \
+    && apk --no-cache add g++ libffi-dev zlib-dev jpeg-dev libwebp-dev openjpeg-dev \
+	&& pip install --no-cache-dir -i https://pypi.mirrors.ustc.edu.cn/simple \
+		-r /usr/data/requirements.txt
+EXPOSE 9900
+VOLUME ["/usr/data/comic_web", "/usr/data/static", "/usr/data/logs", "/usr/data/secrets"]
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8002"]

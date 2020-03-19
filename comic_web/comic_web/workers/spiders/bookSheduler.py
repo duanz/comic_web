@@ -33,21 +33,21 @@ class BookSheduler(object):
 
     def get_book_info(self):
         logger.info('get_book_info start')
-        ret_data = self.session.get(self.url, timeout=5).text
+        ret_data = self.session.get(self.url, timeout=5)
         book_info = self.parser.parse_info(ret_data)
         logger.info('get_book_info comlpleted')
         return book_info
 
     def get_chapter_list(self):
         logger.info('get_chapter_list start')
-        ret_data = self.session.get(self.url, timeout=5).text
+        ret_data = self.session.get(self.url, timeout=5)
         chapter_list = self.parser.parse_chapter(ret_data)
-        logger.info('get_chapter_list comlpleted: {}'.format(chapter_list[0]))
-        return chapter_list[0]
+        logger.info('get_chapter_list comlpleted: {}'.format(chapter_list))
+        return chapter_list
 
     def get_chapter_content(self, url):
         logger.info('get_chapter_content: {} start'.format(url))
-        ret_data = self.session.get(url, timeout=5).text
+        ret_data = self.session.get(url, timeout=5)
         content = self.parser.parse_chapter_content(ret_data)
         logger.info('get_chapter_content: {} comlpleted'.format(url))
         return content
@@ -97,18 +97,21 @@ class BookSheduler(object):
         author.save()
         return author
 
-    def _save_all_chapter_db(self, book, chapter_dict):
+    def _save_all_chapter_db(self, book, chapter_list):
         logger.info('_save_all_chapter_db')
 
-        for index, chapter in enumerate(chapter_dict, 0):
-            logger.info('{}_ -cccchapter-__{}'.format(chapter, chapter_dict[chapter]))
-            chapter_obj = Chapter.normal.filter(book_id=book.id, title=chapter).first()
+        for index, chapter_dict in enumerate(chapter_list, 0):
+            chapter_title = list(chapter_dict.keys())[0]
+            chapter_link = list(chapter_dict.values())[0]
+            logger.info('{}_ -chapter-__{}'.format(chapter_title, chapter_link))
+
+            chapter_obj = Chapter.normal.filter(book_id=book.id, title=chapter_title).first()
             if not chapter_obj:
                 chapter_obj = Chapter()
             chapter_obj.book_id = book.id
-            chapter_obj.title = chapter
+            chapter_obj.title = chapter_title
             chapter_obj.order = index
-            chapter_obj.origin_addr = chapter_dict[chapter]
+            chapter_obj.origin_addr = chapter_link
             chapter_obj.save()
 
     def _update_chapter_content_db(self, book_id):

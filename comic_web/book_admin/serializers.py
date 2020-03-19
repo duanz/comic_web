@@ -89,7 +89,3 @@ class SpydersUtilsSerializer(serializers.Serializer):
             task_type = "start_book_spider_work"
             manage_path = os.path.join(settings.BASE_DIR, 'manage.py')
             subprocess.Popen(['python', manage_path, task_type, "-u", url])
-
-        # run_subprocess("https://manhua.dmzj.com/zuixihuanderenwangjidaiyanjle/")
-        run_subprocess("https://www.biqugex.com/book_31777/")
-        # run_subprocess("https://www.biqudao.com/bqge91054/")
