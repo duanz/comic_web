@@ -2,8 +2,6 @@ from __future__ import absolute_import
 
 import logging
 import re
-import random
-
 import requests
 from celery.decorators import periodic_task
 from django.core.cache import cache
@@ -15,7 +13,7 @@ HOUR = MINUTE * 60
 DAY = HOUR * 24
 
 
-@periodic_task(run_every=MINUTE*30)
+@periodic_task(run_every=HOUR*2)
 def cache_proxy_ip_list():
     logging.debug("get proxy ip list start ")
     url = "http://www.superfastip.com/welcome/freeIP"
@@ -27,12 +25,12 @@ def cache_proxy_ip_list():
     ips = []
     for tr in tr_list:
         text = tr.text_content()
-        ip = re.match('\d+.\d+.\d+.\d+', text)
+        ip = re.match(r'\d+.\d+.\d+.\d+', text)
         if ip:
             ip = ip.group()
         else:
             continue
-        port = re.search("\n +\d+\n", text).group().replace('\n', '').replace(" ", '')
+        port = re.search(r"\n +\d+\n", text).group().replace('\n', '').replace(" ", '')
         h_type = re.search("HTTPS?", text).group().lower()
         ips.append({h_type: ":".join([ip, port])})
 
@@ -48,7 +46,8 @@ def cache_proxy_ip_list():
 def proxy_get_url(url, proxies):
     # proxies = {}
     # proxies["https"] = prox
-    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.146 Safari/537.36',
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 \
+                (KHTML, like Gecko) Chrome/65.0.3325.146 Safari/537.36',
                }
     response = requests.get(url, headers=headers,
                             proxies=proxies, verify=False, timeout=3)

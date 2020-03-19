@@ -31,6 +31,12 @@ class ComicCoverImageApiView(mixins.ListModelMixin, mixins.CreateModelMixin, Bas
 
     def post(self, request, *args, **kwargs):
         return self.create(request, *args, **kwargs)
+    
+    def get_permissions(self):
+        if self.request.method in SAFE_METHODS:
+            return [permission() for permission in self.permission_classes]
+        else:
+            return [IsAuthorization()]
 
 
 class ComicListApiView(mixins.ListModelMixin, BaseGenericAPIView):
@@ -92,6 +98,12 @@ class IndexBlockApiView(mixins.CreateModelMixin, mixins.ListModelMixin, BaseGene
     def post(self, request, *args, **kwargs):
         return self.create(request, *args, **kwargs)
 
+    def get_permissions(self):
+        if self.request.method in SAFE_METHODS:
+            return [permission() for permission in self.permission_classes]
+        else:
+            return [IsAuthorization()]
+
 
 class IndexBlockDetailApiView(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, BaseGenericAPIView):
     """
@@ -108,20 +120,9 @@ class IndexBlockDetailApiView(mixins.RetrieveModelMixin, mixins.UpdateModelMixin
     def post(self, request, *args, **kwargs):
         return self.update(request, *args, **kwargs)
 
+    def get_permissions(self):
+        if self.request.method in SAFE_METHODS:
+            return [permission() for permission in self.permission_classes]
+        else:
+            return [IsAuthorization()]
 
-class SpyderUtilsApiView(BaseApiView):
-    "get: 下发漫画爬虫任务"
-    permission_classes = (AllowAny, )
-
-    def get(self, request, *args, **kwargs):
-        ComicAdminSerializers.SpydersUtilsSerializer().to_representation()
-        return Response("success")
-
-
-class HistoryApiView(BaseApiView):
-    "get: 获取浏览历史"
-    permission_classes = (AllowAny, )
-
-    def get(self, request, *args, **kwargs):
-        data = "TODO"
-        return Response(data)

@@ -79,12 +79,3 @@ class BookChanpterListApiView(mixins.ListModelMixin, BaseGenericAPIView):
 
     def get_queryset(self):
         return self.queryset.filter(book_id=self.kwargs['pk'])
-
-
-class SpyderUtilsApiView(BaseApiView):
-    "get: 下发小说爬虫任务"
-    permission_classes = (AllowAny, )
-
-    def get(self, request, *args, **kwargs):
-        BookAdminSerializers.SpydersUtilsSerializer().to_representation()
-        return Response("success")

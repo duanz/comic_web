@@ -18,6 +18,8 @@ def get_queryset():
 
 
 def task():
+    '''处理任务'''
+    
     logging.info("任务开始执行！")
     queryset = get_queryset()
     logging.info("获取任务列表成功：共{}条".format(queryset.count()))
@@ -62,9 +64,9 @@ def task():
                     parser=parser_selector.get_parser(content_dict['url'])
                 )
 
-            
             try:
-                s.run() 
+                s.run()
+                pass
             except Exception as e:
                 error_info = "执行任务失败： {}".format(e)
                 logging.error(error_info)

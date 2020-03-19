@@ -1,7 +1,6 @@
-from django.db import models
-
-# from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser
 from comic_web.utils.base_model import BaseModel
+from django.db import models
 
 
 class HISTORY_DATA_TYPE_DESC:
@@ -42,6 +41,17 @@ TASK_STATUS = (
     (TASK_STATUS_DESC.FAILD, "执行失败"),
 )
 
+GENDER_CHOICES = (('M', '男'), ('F', '女'), ('U', '未知'))
+
+
+class Member(AbstractUser, BaseModel):
+    gender = models.CharField(max_length=2, choices=GENDER_CHOICES)
+    group_id = models.IntegerField(null=False, default=-1)
+    inviter_id = models.IntegerField(null=True, default=0)
+    markup = models.CharField(null=True, max_length=300, default='')
+    phone = models.CharField(null=True, max_length=30, default='')
+    avatar_url = models.CharField(null=True, max_length=250, default='')
+
 
 class MemberViewHistory(BaseModel):
     user_id = models.IntegerField("用户ID", default=0)
@@ -62,29 +72,4 @@ class Task(BaseModel):
     markup = models.CharField("任务备注", default="", max_length=200)
 
 
-# class Member(BaseModel):
-#     open_id = models.CharField(null=True, max_length=30)
-#     gender = models.CharField(max_length=2, choices=GENDER_CHOICES)
-#     group_id = models.IntegerField(null=False, default=-1)
-#     inviter_id = models.IntegerField(null=True, default=0)
-#     markup = models.CharField(null=True, max_length=30, default='')
-#     phone = models.CharField(null=True, max_length=30, default='')
-#     avatar_url = models.CharField(null=True, max_length=250, default='')
 
-#     class Meta:
-#         permissions = (
-#             ('member_list', '查看管理员列表'),
-#             ('member_add', '添加管理员'),
-#             ('member_edit', '编辑管理员'),
-#             ('member_detail', '查看管理员详情'),
-#             ('member_delete', '删除管理员'),
-
-#             ('group_list', '查看管理员组列表'),
-#             ('group_add', '添加管理员组'),
-#             ('group_edit', '编辑管理员组'),
-#             ('group_permission', '设置管理员组权限'),
-#             ('group_delete', '删除管理员组'),
-
-#             ('customer_list', '查看用户列表'),
-#             ('customer_detail', '查看用户详情'),
-#         )

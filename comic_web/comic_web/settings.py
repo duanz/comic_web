@@ -57,14 +57,13 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-APP_HOST = os.getenv('APP_HOST')
+APP_HOST = os.getenv('APP_HOST', "localhost")
 
 # 上传文件保存目录
 UPLOAD_SAVE_PATH = os.getenv('UPLOAD_SAVE_PATH', os.path.join(
-    BASE_DIR, 'static', 'mall_web_upload'))
-print(UPLOAD_SAVE_PATH)
+    BASE_DIR, 'static', 'comic_web_upload'))
 # 上传文件访问目录
-UPLOAD_STATIC_URL = os.getenv('UPLOAD_STATIC_URL', '/static/mall_web_upload/')
+UPLOAD_STATIC_URL = os.getenv('UPLOAD_STATIC_URL', '/static/comic_web_upload/')
 
 # Application definition
 
@@ -152,7 +151,7 @@ WSGI_APPLICATION = 'comic_web.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('DB_NAME', 'comic_web'),
+        'NAME': os.getenv('DB_NAME', 'comic_web_2'),
         'USER': os.getenv('MYSQL_USER', 'root'),
         'PASSWORD': os.getenv('MYSQL_PASSWORD', 'root'),
         'HOST': os.getenv('MYSQL_HOST', 'localhost'),
@@ -214,7 +213,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-AUTH_USER_MODEL = 'auth.User'
+AUTH_USER_MODEL = 'members.member'
 
 # 默认分页数量
 PAGINATE_BY = 30
@@ -222,7 +221,8 @@ PAGINATE_BY = 30
 # Internationalization
 # https://docs.djangoproject.com/en/2.0/topics/i18n/
 
-
+LOGIN_URL = APP_HOST + "/admin/login"
+LOGOUT_URL = APP_HOST + "/admin/logout"
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 STATIC_URL = '/static/'
