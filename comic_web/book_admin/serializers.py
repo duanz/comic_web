@@ -48,6 +48,7 @@ class BookSerializer(serializers.ModelSerializer):
     create_at = serializers.DateTimeField(
         format="%Y-%m-%d %H:%I:%S", required=False)
     cover = serializers.SerializerMethodField()
+    author = serializers.SerializerMethodField()
 
     class Meta:
         model = BookAdminModels.Book
@@ -58,6 +59,9 @@ class BookSerializer(serializers.ModelSerializer):
 
     def get_cover(self, obj):
         return ComicAdminSerializers.CommonImageSerializer.to_representation(book_id=obj.id, img_type="book_cover", quality="title")
+    
+    def get_author(self, obj):
+        return str(obj.author)
 
 
 class BookDetailSerializer(serializers.ModelSerializer):

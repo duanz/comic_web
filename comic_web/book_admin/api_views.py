@@ -3,7 +3,7 @@ from book_admin import serializers as BookAdminSerializers
 from book_admin import api_filters as BookAdminFilters
 from comic_admin import serializers as ComicAdminSerializers
 from comic_web.utils.permission import IsAuthorization, BaseApiView, BaseGenericAPIView
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, SAFE_METHODS
 from rest_framework.response import Response
 from rest_framework import mixins
 from django_filters import rest_framework
@@ -38,7 +38,7 @@ class BookListApiView(mixins.ListModelMixin, BaseGenericAPIView):
         return self.list(request, *args, **kwargs)
 
 
-class BookDetailApiView(mixins.RetrieveModelMixin, BaseGenericAPIView):
+class BookDetailApiView(mixins.RetrieveModelMixin, mixins.DestroyModelMixin, BaseGenericAPIView):
     """
     get: 获取小说详情；
     """
@@ -48,7 +48,15 @@ class BookDetailApiView(mixins.RetrieveModelMixin, BaseGenericAPIView):
 
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
+    
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
 
+    def get_permissions(self):
+        if self.request.method in SAFE_METHODS:
+            return [permission() for permission in self.permission_classes]
+        else:
+            return [IsAuthorization()]
 
 class BookChapterDetailApiView(mixins.RetrieveModelMixin, BaseGenericAPIView):
     """
