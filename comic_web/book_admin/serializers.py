@@ -49,19 +49,27 @@ class BookSerializer(serializers.ModelSerializer):
         format="%Y-%m-%d %H:%I:%S", required=False)
     cover = serializers.SerializerMethodField()
     author = serializers.SerializerMethodField()
+    download_url = serializers.SerializerMethodField()
+
 
     class Meta:
         model = BookAdminModels.Book
         fields = ("id", "create_at", "status", "update_at", "title",
                   "collection_num", "click_num", "desc", "markup", "on_shelf",
-                  "is_finished", "author", "latest_chapter", "cover", )
-        read_only_fields = ("cover", )
+                  "is_finished", "author", "latest_chapter", "cover", "download_url", )
+        read_only_fields = ("cover", "download_url",)
 
     def get_cover(self, obj):
         return ComicAdminSerializers.CommonImageSerializer.to_representation(book_id=obj.id, img_type="book_cover", quality="title")
     
     def get_author(self, obj):
         return str(obj.author)
+    
+    def get_download_url(self, obj):
+        path = ""
+        if obj.is_download:
+            path = settings.APP_HOST + os.path.join(settings.UPLOAD_STATIC_URL, obj.title+'.epub')
+        return path
 
 
 class BookDetailSerializer(serializers.ModelSerializer):

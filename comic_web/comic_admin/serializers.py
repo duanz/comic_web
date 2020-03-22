@@ -101,12 +101,9 @@ class ChapterDetailSerializer(serializers.ModelSerializer):
         return {"pre_id": pre_id, "next_id": next_id}
 
 
-class CommonImageSerializer(serializers.ModelSerializer):
+class CommonImageSerializer:
 
-    class Meta:
-        model = ComicAdminModels.Image
-        fields = ('__all__')
-
+    @staticmethod
     def to_representation(comic_id=None, book_id=None, chapter_id=None, img_type="chapter_content", quality="thumb", only_url=True, only_path=False):
         if comic_id:
             comic_id_list = comic_id if isinstance(
@@ -156,19 +153,26 @@ class ComicSerializer(serializers.ModelSerializer):
     update_at = serializers.DateTimeField(
         format="%Y-%m-%d %H:%I:%S", required=False)
     author = serializers.SerializerMethodField()
+    download_url = serializers.SerializerMethodField()
 
     class Meta:
         model = ComicAdminModels.Comic
         fields = ("id", "create_at", "status", "update_at", "title",
                   "collection_num", "click_num", "desc", "markup", "on_shelf",
-                  "is_finished", "author", "latest_chapter", "cover", )
-        read_only_fields = ("cover", )
+                  "is_finished", "author", "latest_chapter", "cover", "download_url", )
+        read_only_fields = ("cover", "download_url",)
 
     def get_cover(self, obj):
         return CommonImageSerializer.to_representation(comic_id=obj.id, img_type="comic_cover", quality="title")
     
     def get_author(self, obj):
         return str(obj.author)
+    
+    def get_download_url(self, obj):
+        path = ""
+        if obj.is_download:
+            path = settings.APP_HOST + os.path.join(settings.UPLOAD_STATIC_URL, obj.title+'.epub')
+        return path
 
 
 class ComicDetailSerializer(serializers.ModelSerializer):
