@@ -56,8 +56,8 @@ class BookSerializer(serializers.ModelSerializer):
         model = BookAdminModels.Book
         fields = ("id", "create_at", "status", "update_at", "title",
                   "collection_num", "click_num", "desc", "markup", "on_shelf",
-                  "is_finished", "author", "latest_chapter", "cover", "download_url", )
-        read_only_fields = ("cover", "download_url",)
+                  "is_finished", "author", "latest_chapter", "cover", "download_url", "is_download", )
+        read_only_fields = ("cover", "download_url", "is_download", )
 
     def get_cover(self, obj):
         return ComicAdminSerializers.CommonImageSerializer.to_representation(book_id=obj.id, img_type="book_cover", quality="title")

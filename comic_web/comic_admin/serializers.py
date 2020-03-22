@@ -158,9 +158,9 @@ class ComicSerializer(serializers.ModelSerializer):
     class Meta:
         model = ComicAdminModels.Comic
         fields = ("id", "create_at", "status", "update_at", "title",
-                  "collection_num", "click_num", "desc", "markup", "on_shelf",
+                  "collection_num", "click_num", "desc", "markup", "on_shelf", "is_download",
                   "is_finished", "author", "latest_chapter", "cover", "download_url", )
-        read_only_fields = ("cover", "download_url",)
+        read_only_fields = ("cover", "download_url", "is_download", )
 
     def get_cover(self, obj):
         return CommonImageSerializer.to_representation(comic_id=obj.id, img_type="comic_cover", quality="title")
