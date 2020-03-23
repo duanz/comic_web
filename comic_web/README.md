@@ -3,8 +3,8 @@
 
 - 小说漫画爬虫项目，生产epub，推送至邮箱 
 - 提供API和文档服务
-- 搭配该项目```https://e.coding.net/duanxz/comic_admin_vue/comic_admin_vue.git```, 提供直观的后台管理操作
-- 搭配该项目```https://e.coding.net/duanxz/comic_vue_app/comic_vue_app.git```, 提供简易的阅读器
+- 搭配该项目```https://github.com/duanz/comic_vue_app.git```, 提供直观的后台管理操作
+- 搭配该项目```https://github.com/duanz/comic_admin_vue.git```, 提供简易的阅读器
 
 ### 软件环境
 
