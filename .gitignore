@@ -56,10 +56,12 @@ docs/_build/
 # PyBuilder
 target/
 
-mall_web_upload/
+mall_web_upload/*
 comic_web/comic_web/settings_local.py
-comic_web/.vscode/launch.json
-comic_web/.vscode/settings.json
-comic_web/.vscode/tasks.json
+comic_web/.vscode/*
 comic_web/celerybeat-schedule
 comic_web/celerybeat.pid
+comic_web/static/comic_web_upload/*
+comic_web/book_admin/migrations/*
+comic_web/comic_admin/migrations/*
+comic_web/members/migrations/*

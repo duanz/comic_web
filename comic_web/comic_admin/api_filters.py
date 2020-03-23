@@ -9,4 +9,5 @@ class ComicListFilter(filters.FilterSet):
         fields = {
             'title': ['icontains'],
             'author': ['exact'],
+            'update_at': ['lte']
         }

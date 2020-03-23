@@ -31,7 +31,7 @@ class ComicCoverImageApiView(mixins.ListModelMixin, mixins.CreateModelMixin, Bas
 
     def post(self, request, *args, **kwargs):
         return self.create(request, *args, **kwargs)
-    
+
     def get_permissions(self):
         if self.request.method in SAFE_METHODS:
             return [permission() for permission in self.permission_classes]
@@ -59,9 +59,10 @@ class ComicListApiView(mixins.ListModelMixin, BaseGenericAPIView):
         return self.list(request, *args, **kwargs)
 
 
-class ComicDetailApiView(mixins.RetrieveModelMixin, BaseGenericAPIView):
+class ComicDetailApiView(mixins.RetrieveModelMixin, mixins.DestroyModelMixin, BaseGenericAPIView):
     """
     get: 获取漫画详情；
+    delete: 删除漫画;
     """
     queryset = ComicAdminModels.Comic.normal.filter(on_shelf=True)
     serializer_class = ComicAdminSerializers.ComicDetailSerializer
@@ -69,6 +70,15 @@ class ComicDetailApiView(mixins.RetrieveModelMixin, BaseGenericAPIView):
 
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
+     
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
+    
+    def get_permissions(self):
+        if self.request.method in SAFE_METHODS:
+            return [permission() for permission in self.permission_classes]
+        else:
+            return [IsAuthorization()]
 
 
 class ComicChapterDetailApiView(mixins.RetrieveModelMixin, BaseGenericAPIView):

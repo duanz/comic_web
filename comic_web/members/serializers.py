@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
 from members import models as MemberModels
-from .tasks import handle_book_and_comic_spider_tasks
+from .tasks import handle_worker_tasks
 import logging
 
 
@@ -74,12 +74,14 @@ class TaskSerializer(serializers.ModelSerializer):
         fields = "__all__"
     
     def create(self, validated_data):
-        handle_book_and_comic_spider_tasks.delay()
-        return super().create(validated_data)
+        instance = super().create(validated_data)
+        handle_worker_tasks.delay()
+        return instance
     
     def update(self, instance, validated_data):
-        handle_book_and_comic_spider_tasks.delay()
-        return super().update(instance, validated_data)
+        instance = super().update(instance, validated_data)
+        handle_worker_tasks.delay()
+        return instance
 
 
 class ViewHistorySerializer(serializers.ModelSerializer):

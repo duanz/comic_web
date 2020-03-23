@@ -14,6 +14,7 @@ class Book(BaseModel):
     desc = models.CharField('描述', max_length=500, default="")
     markup = models.CharField('标签', null=True, max_length=100, default='')
     on_shelf = models.BooleanField('是否上架', default=True)
+    is_download = models.BooleanField('是否可以下载', default=False)
     is_finished = models.BooleanField('是否能已完结', default=False)
     latest_chapter = models.CharField('最新章节', max_length=20, default="")
     origin_addr = models.CharField('原始地址', max_length=200, default="")

@@ -152,20 +152,6 @@ class ComicSheduler(object):
         logger.info('_update_chapter_content_db')
 
         queryset = Chapter.normal.filter(comic_id=comic_id).values("id", "origin_addr")
-        # logger.info('=============: {}'.format(queryset.count()))
-
-        # rs = (grequests.get(m['origin_addr'], proxies=random.choice(
-        #     self.proxy_ips), verify=False, timeout=10) for m in queryset if m.has_key('origin_addr'))
-        # chapters_origin_pages = grequests.map(rs)
-
-        # for idx, content in enumerate(chapters_origin_pages):
-        #     image_list = self.get_chapter_content_only(content.text)
-        #     for index, img in enumerate(image_list.values(), 1):
-        #         info = self._save_image_disk(img)
-        #         img, flag = Image.normal.get_or_create(
-        #             img_type=IMAGE_TYPE_DESC.CHAPER_CONTENT, order=index, key=info['id'], name=info['name'])
-        #         ChapterImage(
-        #             comic_id=comic_id, chapter_id=queryset[idx].id, image_id=img.id, order=index).save()
 
         for obj in queryset:
             if 'origin_addr' in obj:
