@@ -28,7 +28,7 @@ class MakeMyEpub:
         epub = mkepub.Book(title=comic_obj.title, author=str(comic_obj.author))
 
         # 设置封面
-        comic_cover_path_list = CommonImageSerializer.to_representation(comic_id=comic_id, img_type="comic_cover",only_url=False, only_path=True)
+        comic_cover_path_list = CommonImageSerializer.to_representation(comic_id=comic_id, img_type="comic_cover", quality="title", only_url=False, only_path=True)
         logging.info(comic_cover_path_list)
         if comic_cover_path_list:
             with open(comic_cover_path_list[0], 'rb') as file:
@@ -38,8 +38,8 @@ class MakeMyEpub:
         chapters = ComicChapter.normal.filter(comic_id=comic_id)
         for chapter in chapters:
             html = ""
-            img_lab = '<img src="images/{}" alt="You can use images as well">'
-            chapter_img_path_list = CommonImageSerializer.to_representation(chapter_id=chapter.id, img_type="chapter_content",only_url=False, only_path=True)
+            img_lab = '<img src="images/{}" width="100%" alt="You can use images as well">'
+            chapter_img_path_list = CommonImageSerializer.to_representation(chapter_id=chapter.id, img_type="chapter_content", quality="photo", only_url=False, only_path=True)
             if chapter_img_path_list:
                 for img_idx, img_path in enumerate(chapter_img_path_list):
                     file_name = "{}_{}_{}.jpg".format(comic_id, chapter.id, img_idx)
