@@ -233,17 +233,3 @@ TEMPLATE_DIRS = (os.path.join(BASE_DIR, 'templates'),)
 
 FIXTURE_DIRS = (os.path.join(BASE_DIR, 'fixtures',),)
 
-
-# 需添上正确的参数
-# TODO
-WX_CONF = {
-    'AppID': os.getenv('WX_APP_ID', 'root'),
-    'AppSecret': os.getenv('WX_APP_SECRET', 'root'),
-    'MiniAppID': os.getenv('WX_MINI_APP_ID', 'root'),
-    'MiniAppSecret': os.getenv('WX_MINI_APP_SECRET', 'root'),
-    'MchID': os.getenv('MCH_ID', 'root'),
-    'MchKey': os.getenv('MCH_KEY', 'root'),
-    'NotifyUrl': '',
-    'AppHost': os.getenv('APP_HOST', 'localhost'),
-    'EventApiToken': os.getenv('WX_EVENT_API_TOKEN', 'root'),
-}
