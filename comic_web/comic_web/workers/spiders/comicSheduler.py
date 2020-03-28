@@ -57,7 +57,7 @@ class ComicSheduler(object):
         chapter_list = self.parser.parse_chapter(ret_data)
         logger.info('get_chapter_list comlpleted for comic: {}'.format(
             len(chapter_list)))
-        return chapter_list[0]
+        return chapter_list
 
     def get_chapter_content(self, url):
         logger.info('get_chapter_content for comic: {} start'.format(url))
@@ -132,20 +132,22 @@ class ComicSheduler(object):
         cover.save()
         return cover
 
-    def _save_all_chapter_db(self, comic, chapter_dict):
+    def _save_all_chapter_db(self, comic, chapter_list):
         logger.info('_save_all_chapter_db for comic')
 
-        for index, chapter in enumerate(chapter_dict, 0):
+        for index, chapter_dict in enumerate(chapter_list, 0):
+            chapter_title = list(chapter_dict.keys())[0]
+            chapter_link = list(chapter_dict.values())[0]
             logger.info(
-                '{}_ -cccchapter-__{}'.format(chapter, chapter_dict[chapter]))
+                '{}_ -chapter-__{}'.format(chapter_title, chapter_link))
             chapter_obj = Chapter.normal.filter(
-                comic_id=comic.id, title=chapter).first()
+                comic_id=comic.id, title=chapter_title).first()
             if not chapter_obj:
                 chapter_obj = Chapter()
             chapter_obj.comic_id = comic.id
-            chapter_obj.title = chapter
+            chapter_obj.title = chapter_title
             chapter_obj.order = index
-            chapter_obj.origin_addr = chapter_dict[chapter]
+            chapter_obj.origin_addr = chapter_link
             chapter_obj.save()
 
     def _update_chapter_content_db(self, comic_id):

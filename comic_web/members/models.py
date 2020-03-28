@@ -77,5 +77,9 @@ class Task(BaseModel):
     content = models.CharField("任务内容", default="", max_length=300)
     markup = models.CharField("任务备注", default="", max_length=200)
 
+    class Meta:
+        verbose_name_plural = '任务'
+        ordering = ['-update_at']
+
 
 

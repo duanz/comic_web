@@ -1,4 +1,5 @@
 import os
+import math
 import uuid
 from PIL import Image
 from comic_web import settings
@@ -128,6 +129,30 @@ def remove_photo(photo_id, base_static_path, photo_type='photo', extension='.jpg
             os.remove(f_path_target)
         except OSError:
             pass
+
+def split_photo_fit_kindle(photo_file, outpath=settings.UPLOAD_SAVE_PATH):
+    if not os.path.exists(photo_file):
+        raise IOError
+
+    if not os.path.exists(outpath):
+        os.makedirs(outpath, 0o0755)
+
+    img = Image.open(photo_file)
+    orig_width, orig_height = img.size
+
+    img_split_num = int(math.ceil(orig_height / (orig_width * 1.6)))
+    if img_split_num == 1:
+        return [photo_file]
+    else:
+        file_list = []
+        for i in range(img_split_num):
+            shape = (0, int(orig_width * 1.6 * i), orig_width, int(orig_width * 1.6 * (i + 1)))
+            new_img = img.crop(shape)
+            filename = os.path.join(outpath, "{}_{}".format(i, os.path.split(photo_file)[-1]))
+            new_img.save(filename)
+            file_list.append(filename)
+        
+        return file_list
 
 
 def save_upload_photo(photo_file, base_static_path=settings.UPLOAD_SAVE_PATH, photo_type='photo', extension='.jpg'):

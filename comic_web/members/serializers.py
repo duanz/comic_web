@@ -68,6 +68,8 @@ class MemberLoginSerializer(serializers.ModelSerializer):
 class TaskSerializer(serializers.ModelSerializer):
     create_at = serializers.DateTimeField(
         format="%Y-%m-%d %H:%I:%S", required=False)
+    update_at = serializers.DateTimeField(
+        format="%Y-%m-%d %H:%I:%S", required=False)
 
     class Meta:
         model = MemberModels.Task

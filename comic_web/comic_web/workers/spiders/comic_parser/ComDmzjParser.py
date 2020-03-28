@@ -48,16 +48,16 @@ class ComDmzjParser(BaseParser):
 
     def parse_chapter(self, data):
         doc = pq(data)
-        url_list = {}
+        chapter_list = []
 
         for u in doc('div.tab-content:nth-child(3) > ul:nth-child(1) > li'):
             name = u.find_class('list_con_zj')[0].text if u.find_class('list_con_zj') and hasattr(u.find_class('list_con_zj')[0], 'text') else None
             href = u.find('a').get('href')
             if not name or not href:
                 raise Exception('parse chapter list error: name: {}, href: {}'.format(name, href))
-            url_list.setdefault(name, href)
-
-        return (url_list, )
+            chapter_list.append({name: href})
+        chapter_list.reverse()
+        return chapter_list
 
     def parse_image_list(self, data):
         data = data.text if hasattr(data, 'text') else data

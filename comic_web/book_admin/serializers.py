@@ -50,6 +50,8 @@ class BookSerializer(serializers.ModelSerializer):
     cover = serializers.SerializerMethodField()
     author = serializers.SerializerMethodField()
     download_url = serializers.SerializerMethodField()
+    update_at = serializers.DateTimeField(
+        format="%Y-%m-%d %H:%I:%S", required=False)
 
 
     class Meta:
@@ -68,7 +70,7 @@ class BookSerializer(serializers.ModelSerializer):
     def get_download_url(self, obj):
         path = ""
         if obj.is_download:
-            path = settings.APP_HOST + os.path.join(settings.UPLOAD_STATIC_URL, obj.title+'.epub')
+            path = settings.APP_HOST + os.path.join(settings.UPLOAD_STATIC_URL, obj.title+'.txt')
         return path
 
 
@@ -78,6 +80,8 @@ class BookDetailSerializer(serializers.ModelSerializer):
     # author = ComicAdminSerializers.AuthorSerializer()
     chapter = serializers.SerializerMethodField()
     cover = serializers.SerializerMethodField()
+    update_at = serializers.DateTimeField(
+        format="%Y-%m-%d %H:%I:%S", required=False)
 
     class Meta:
         model = ComicAdminModels.Comic
